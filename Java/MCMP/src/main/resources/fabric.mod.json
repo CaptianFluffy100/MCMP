@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "mcmp",
+	"version": "${version}",
+	"name": "Minecraft Multiverse Portals",
+	"description": "Connect Several servers with portals",
+	"authors": [
+		"JustBrenkman",
+		"CaptianFluffy100"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/mcmp/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.brenkman.minecraft.mcmp.MCMP"
+		],
+		"client": [
+			"net.brenkman.minecraft.mcmp.MCMP"
+		]
+	},
+	"mixins": [
+		"mcmp.mixins.json",
+		{
+			"config": "mcmp.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.14.22",
+		"minecraft": "~1.20",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+	}
+}
