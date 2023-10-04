@@ -1,2 +1,2 @@
-# Mod of the name
+# MCPM
 Link multiple servers up with portals
