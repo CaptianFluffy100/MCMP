@@ -21,14 +21,14 @@ public class MCMP implements ModInitializer {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
-        List<Portal> portals;
+        Settings settings;
         try {
-            portals = Settings.parseJsonString();
-            LOGGER.info("There are {} Portals", portals.size());
+            settings = Settings.parseSettings();
+            LOGGER.info("There are {} Portals", settings.portals.size());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         // Use Portals
-        LOGGER.info("Portals: {}", portals);
+        LOGGER.info("Portals: {}", settings.portals);
     }
 }
