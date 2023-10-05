@@ -44,7 +44,12 @@ public class Settings {
     }
 
     private static String getSettingsPath() {
-        String dir = System.getProperty("user.dir")+"/Config/mcmp.portals.json";
+        String dir = System.getProperty("user.dir")+"/config/mcmp.portals.json";
+        return dir;
+    }
+
+    private static String getSettingsDir() {
+        String dir = System.getProperty("user.dir")+"/config/";
         return dir;
     }
 
@@ -55,12 +60,16 @@ public class Settings {
     }
 
     private static void writeToFile() throws IOException {
+        File d = new File(getSettingsDir());
+        if (!d.exists()) {
+            Files.createDirectories(Paths.get(getSettingsDir()));
+        }
+
         String path = getSettingsPath();
         File f = new File(path);
-        // f.getParentFile().mkdirs();
         FileWriter a = new FileWriter(f, true);
         BufferedWriter b = new BufferedWriter(a);
-        b.write("{\"portals\":[]}");
+        b.write("{\"resolver\":{\"ip\":\"0.0.0.0\",\"port\":2000},\"portals\":[]}");
         b.close();
     }
 }
