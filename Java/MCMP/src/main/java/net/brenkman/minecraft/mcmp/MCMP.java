@@ -28,6 +28,8 @@ public class MCMP implements ModInitializer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        // Use GLaDOS Settings (resolver)
+        LOGGER.info("GLaDOS: {}", settings.resolver);
         // Use Portals
         LOGGER.info("Portals: {}", settings.portals);
     }

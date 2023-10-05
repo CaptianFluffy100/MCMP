@@ -11,10 +11,12 @@ import java.util.List;
 
 public class Settings {
 
+    public final Resolver resolver;
     public final List<Portal> portals;
 
-    public Settings(List<Portal> portals) {
+    public Settings(List<Portal> portals, Resolver resolver) {
         this.portals = portals;
+        this.resolver = resolver;
     }
 
     public static Settings parseSettings() throws IOException {
