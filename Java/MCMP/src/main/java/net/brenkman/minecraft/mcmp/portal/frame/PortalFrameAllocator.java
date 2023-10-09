@@ -1,0 +1,128 @@
+package net.brenkman.minecraft.mcmp.portal.frame;
+
+import net.brenkman.minecraft.mcmp.api.MultiversePortalRegistry;
+import net.brenkman.minecraft.mcmp.portal.IgnitionSource;
+import net.brenkman.minecraft.mcmp.portal.PortalDefinition;
+import net.brenkman.minecraft.mcmp.util.PortalHelper;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.BlockLocating;
+import net.minecraft.world.TeleportTarget;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.function.Predicate;
+
+public abstract class PortalFrameAllocator {
+    protected HashSet<Block> VALID_FRAME = null;
+    protected int foundPortalBlocks;
+    public BlockPos lowerCorner;
+    protected WorldAccess world;
+
+    public abstract PortalFrameAllocator init(WorldAccess world, BlockPos blockPos, Direction.Axis axis, Block... foundations);
+    public abstract Optional<PortalFrameAllocator> getNewPortal(WorldAccess worldAccess, BlockPos blockPos, Direction.Axis axis, Block... foundations);
+    public abstract Optional<PortalFrameAllocator> getOrEmpty(WorldAccess worldAccess, BlockPos blockPos, Predicate<PortalFrameAllocator> predicate, Direction.Axis axis, Block... foundations);
+    public abstract boolean isAlreadyLitPortalFrame();
+    public abstract boolean isValidFrame();
+    public abstract void lightPortal(Block frameBlock);
+    public abstract void createPortal(World world, BlockPos pos, BlockState frameBlock, Direction.Axis axis);
+    public abstract boolean isRequestedSize(int attemptWidth, int attemptHeight);
+    public abstract BlockLocating.Rectangle getRectangle();
+    public abstract Direction.Axis getAxis1();
+    public abstract Direction.Axis getAxis2();
+    public abstract BlockPos doesPortalFitAt(World world, BlockPos attemptPos, Direction.Axis axis);
+    public abstract Vec3d getEntityOffsetInPortal(BlockLocating.Rectangle arg, Entity entity, Direction.Axis portalAxis);
+    public abstract TeleportTarget getTPTargetInPortal(BlockLocating.Rectangle portalRect, Direction.Axis portalAxis, Vec3d prevOffset, Entity entity);
+    protected BlockPos getLowerCorner(BlockPos blockPos, Direction.Axis axis1, Direction.Axis axis2) {
+        if (!validStateInsidePortal(world.getBlockState(blockPos), VALID_FRAME))
+            return null;
+        return getLimitForAxis(getLimitForAxis(blockPos, axis1), axis2);
+    }
+
+    protected BlockPos getLimitForAxis(BlockPos blockPos, Direction.Axis axis) {
+        if (blockPos == null || axis == null) return null;
+        int offset = 1;
+        while (validStateInsidePortal(world.getBlockState(blockPos.offset(axis, -offset)), VALID_FRAME)) {
+            offset++;
+            if (offset > 20) return null;
+            if ((axis.equals(Direction.Axis.Y) && blockPos.getY() - offset < world.getBottomY()) ||
+                    (!axis.equals(Direction.Axis.Y) && !world.getWorldBorder().contains(blockPos.offset(axis, -offset))))
+                return null;
+        }
+        return blockPos.offset(axis, -(offset - 1));
+    }
+
+    protected int getSize(Direction.Axis axis, int minSize, int maxSize) {
+        for (int i = 1; i <= maxSize; i++) {
+            BlockState blockState = this.world.getBlockState(this.lowerCorner.offset(axis, i));
+            if (!validStateInsidePortal(blockState, VALID_FRAME)) {
+                if (VALID_FRAME.contains(blockState.getBlock())) {
+                    return i >= minSize ? i : 0;
+
+                }
+                break;
+            }
+        }
+        return 0;
+    }
+
+    protected boolean checkForValidFrame(Direction.Axis axis1, Direction.Axis axis2, int size1, int size2) {
+        BlockPos checkPos = lowerCorner.mutableCopy();
+        for (int i = 0; i < size1; i++) {
+            if (!VALID_FRAME.contains(world.getBlockState(checkPos.offset(axis2, -1)).getBlock()) || !VALID_FRAME.contains(world.getBlockState(checkPos.offset(axis2, size2)).getBlock()))
+                return false;
+            checkPos = checkPos.offset(axis1, 1);
+        }
+        checkPos = lowerCorner.mutableCopy();
+        for (int i = 0; i < size2; i++) {
+            if (!VALID_FRAME.contains(world.getBlockState(checkPos.offset(axis1, -1)).getBlock()) || !VALID_FRAME.contains(world.getBlockState(checkPos.offset(axis1, size1)).getBlock()))
+                return false;
+            checkPos = checkPos.offset(axis2, 1);
+        }
+        return true;
+    }
+
+    protected void countExistingPortalBlocks(Direction.Axis axis1, Direction.Axis axis2, int size1, int size2) {
+        for (int i = 0; i < size1; i++)
+            for (int j = 0; j < size2; j++)
+                if (PortalHelper.isInstanceMultiversePortal(world.getBlockState(this.lowerCorner.offset(axis1, i).offset(axis2, j))))
+                    foundPortalBlocks++;
+    }
+
+    public static boolean validStateInsidePortal(BlockState blockState, HashSet<Block> foundations) {
+        IgnitionSource ignitionSource = IgnitionSource.FIRE;
+        for (Block block : foundations) {
+            PortalDefinition link = MultiversePortalRegistry.getPortalDefinitionFromBlock(block);
+            if (link != null) {
+                ignitionSource = link.ignitionSource;
+                break;
+            }
+        }
+        if (blockState.isAir() || PortalHelper.isInstanceMultiversePortal(blockState))
+            return true;
+        if (ignitionSource == IgnitionSource.FIRE)
+            return blockState.isIn(BlockTags.FIRE);
+        if (ignitionSource.isWater())
+            return blockState.getFluidState().isIn(FluidTags.WATER);
+        if (ignitionSource.isLava())
+            return blockState.getFluidState().isIn(FluidTags.LAVA);
+        if (ignitionSource.ignitionSourceType == IgnitionSource.IgnitionSourceType.FLUID) {
+            return Registries.FLUID.getId(blockState.getFluidState().getFluid()).equals(ignitionSource.ignitionSourceID);
+        }
+        return false;
+    }
+
+    @FunctionalInterface
+    public interface PortalFrameAllocatorFactory {
+        PortalFrameAllocator createInstanceOfPortalFrameTester();
+    }
+}

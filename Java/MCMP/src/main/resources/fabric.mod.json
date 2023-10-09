@@ -17,10 +17,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.brenkman.minecraft.mcmp.MCMP"
+			"net.brenkman.minecraft.mcmp.MCMPMod"
 		],
 		"client": [
-			"net.brenkman.minecraft.mcmp.MCMP"
+			"net.brenkman.minecraft.mcmp.MCMPClient"
+		],
+		"server": [
+			"net.brenkman.minecraft.mcmp.network.ServerNetworkManager"
 		]
 	},
 	"mixins": [

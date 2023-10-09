@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "mcmp:block/multiverse_portal_block_ns"
+    },
+    "axis=z": {
+      "model": "mcmp:block/multiverse_portal_block_ew"
+    },
+    "axis=y": {
+      "model": "mcmp:block/multiverse_portal_block_flat"
+    }
+  }
+}
