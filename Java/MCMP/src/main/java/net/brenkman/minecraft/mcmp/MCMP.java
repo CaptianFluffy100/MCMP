@@ -1,6 +1,5 @@
 package net.brenkman.minecraft.mcmp;
 
-import net.brenkman.minecraft.mcmp.config.Portal;
 import net.brenkman.minecraft.mcmp.config.Settings;
 import net.fabricmc.api.ModInitializer;
 
@@ -8,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 
 public class MCMP implements ModInitializer {
     // This logger is used to write text to the console and the log file.
@@ -28,6 +26,8 @@ public class MCMP implements ModInitializer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        // Use GLaDOS Settings (resolver)
+        LOGGER.info("GLaDOS: {}", settings.resolver);
         // Use Portals
         LOGGER.info("Portals: {}", settings.portals);
     }
