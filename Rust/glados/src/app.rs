@@ -288,6 +288,7 @@ fn ServerPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
+                <a class="btn btn-ghost float-right bg-success-content">ADD</a>
                 {ServerPageEditDyn}
               </div> 
               {PopulateSideBar}
@@ -336,7 +337,7 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                     match a {
                                         Ok(data) => {
                                             for server in data.clone().servers {
-                                                html.push(view! {<tr><th>{server.name}</th><td>{server.uuid}</td><td>{server.ip}</td><td>{server.port}</td><td><a>EDIT</a></td><td><a>REMOVE</a></td></tr>});
+                                                html.push(view! {<tr><th>{server.name}</th><td>{server.uuid}</td><td>{server.ip}</td><td>{server.port}</td><td><a class="btn btn-ghost bg-warning-content">EDIT</a></td><td><a class="btn btn-ghost bg-error-content">REMOVE</a></td></tr>});
                                             }
                                             html
                                         },
@@ -371,6 +372,7 @@ fn PortalPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
+                <a class="btn btn-ghost float-right bg-success-content">ADD</a>
                 {PortalPageEditDyn}
               </div> 
               {PopulateSideBar}
@@ -417,7 +419,7 @@ pub fn portal_page_edit_dyn() -> impl IntoView {
                                     match a {
                                         Ok(data) => {
                                             for portals in data.clone().portals {
-                                                html.push(view! {<tr><th>{portals.index}</th><td>{portals.frameBlockId}</td><td>{portals.lightWithItemId}</td><td>{portals.color_b}</td><td>{portals.color_g}</td><td>{portals.color_r}</td><td><a>EDIT</a></td><td><a>REMOVE</a></td></tr>});
+                                                html.push(view! {<tr><th>{portals.index}</th><td>{portals.frameBlockId}</td><td>{portals.lightWithItemId}</td><td>{portals.color_b}</td><td>{portals.color_g}</td><td>{portals.color_r}</td><td><a class="btn btn-ghost bg-warning-content">EDIT</a></td><td><a class="btn btn-ghost bg-error-content">REMOVE</a></td></tr>});
                                             }
                                             html
                                         },
