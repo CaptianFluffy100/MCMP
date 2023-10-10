@@ -102,12 +102,28 @@ pub fn PopulateSideBar() -> impl IntoView {
           <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
           <ul class="menu p-4 w-80 h-full bg-base-200 text-base-content" style="height: 100%;">
             <li><a href="/">Home Page</a></li>
-            <li class="w-full text-center underline align-center content-center font-black pt-6">List</li>
-            <li><a href="/servers">Server List</a></li>
-            <li><a href="/portals">Portal List</a></li>
-            <li class="w-full text-center underline align-center content-center font-black pt-6">Add/Remove/Edit</li>
-            <li><a href="/server/list">Servers</a></li>
-            <li><a href="/portal/list">Portals</a></li>
+            // <li class="w-full text-center underline align-center content-center font-black pt-6">List</li>
+            <li>
+                <details close>
+                    <summary class="w-full underline font-black">List</summary>
+                    <ul>
+                        <li><a href="/servers">Server List</a></li>
+                        <li><a href="/portals">Portal List</a></li>
+                    </ul>
+                </details>
+            </li>
+            // <li class="w-full text-center underline align-center content-center font-black pt-6">Add/Remove/Edit</li>
+            // <li><a href="/server/list">Servers</a></li>
+            // <li><a href="/portal/list">Portals</a></li>
+            <li>
+                <details close>
+                    <summary class="w-full underline font-black">Add/Remove/Edit</summary>
+                    <ul>
+                        <li><a href="/server/list">Servers</a></li>
+                        <li><a href="/portal/list">Portals</a></li>
+                    </ul>
+                </details>
+            </li>
           </ul>
         </div>
     }

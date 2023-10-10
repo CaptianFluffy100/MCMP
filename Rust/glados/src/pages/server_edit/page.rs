@@ -23,7 +23,7 @@ pub fn ServerPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
-                <a class="btn btn-ghost float-right bg-success-content">ADD</a>
+                // <a class="btn btn-ghost float-right bg-success-content">ADD</a>
                 {ServerPageEditDyn}
               </div> 
               {PopulateSideBar}
