@@ -1,5 +1,5 @@
 use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_servers}};
-use leptos::{*, html::Tr};
+use leptos::{*, html::{Tr, Dialog}};
 use leptos_meta::*;
 use leptos_router::*;
 use leptos::{error::Result, *};
@@ -23,7 +23,7 @@ pub fn ServerPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
-                // <a class="btn btn-ghost float-right bg-success-content">ADD</a>
+                <a class="btn btn-outline float-right btn-success">ADD</a>
                 {ServerPageEditDyn}
               </div> 
               {PopulateSideBar}
@@ -65,6 +65,7 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                 <tbody> 
                                 {    
                                     let mut html: Vec<HtmlElement<Tr>> = vec![];
+                                    let mut edit: Vec<HtmlElement<Dialog>> = vec![];
                                     // if html.len() == 0 {
                                     //     html = html + &format!("{:?}", a);
                                     // }
@@ -72,14 +73,16 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                     match a {
                                         Ok(data) => {
                                             for server in data.clone().servers {
-                                                html.push(view! {<tr><th>{server.name}</th><td>{server.uuid}</td><td>{server.ip}</td><td>{server.port}</td><td><a class="btn btn-ghost bg-warning-content">EDIT</a></td><td><a class="btn btn-ghost bg-error-content">REMOVE</a></td></tr>});
+                                                let open = server.uuid.clone()+".showModal()";
+                                                html.push(view! {<tr><th>{server.name.clone()}</th><td>{server.uuid.clone()}</td><td>{server.ip.clone()}</td><td>{server.port}</td><td><a class="btn btn-outline btn-warning" onclick={open}>EDIT</a></td><td><a class="btn btn-outline btn-error">REMOVE</a></td></tr>});
+                                                edit.push(view! {<dialog id={server.uuid.clone()} class="modal"><div class="modal-box"><h3 class="font-bold text-lg">Edit {server.name.clone()}</h3><div class="py-4 grid grid-rows-2 grid-flow-col gap-4"><div><a>UUID: </a><input type="text" placeholder="UUID" class="input input-bordered w-full max-w-xs" value={server.uuid.clone()} disabled /></div><div><a>NAME: </a><input type="text" placeholder="NAME" class="input input-bordered w-full max-w-xs" value={server.name.clone()} /></div><div><a>IP: </a><input type="text" placeholder="IP" class="input input-bordered w-full max-w-xs" value={server.ip.clone()} /></div><div><a>PORT: </a><input type="text" placeholder="PORT" class="input input-bordered w-full max-w-xs" value={server.port.clone()} /></div></div><button class="btn btn-outline btn-success">SAVE</button></div><form method="dialog" class="modal-backdrop"><button>close</button></form></dialog>});
                                             }
-                                            html
+                                            (html, edit)
                                         },
                                         Err(e) => {
                                             html.push(view! {<tr>{format!("{:?}", e)}</tr>});
                                             // TODO
-                                            html
+                                            (html, edit)
                                         }
                                     }
                                 }

@@ -1,5 +1,5 @@
 use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_portals}};
-use leptos::{*, html::Tr};
+use leptos::{*, html::{Tr, Dialog}};
 use leptos_meta::*;
 use leptos_router::*;
 use leptos::{error::Result, *};
@@ -23,7 +23,7 @@ pub fn PortalPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
-                <a class="btn btn-ghost float-right bg-success-content">ADD</a>
+                <a class="btn btn-outline float-right btn-success">ADD</a>
                 {PortalPageEditDyn}
               </div> 
               {PopulateSideBar}
@@ -67,17 +67,20 @@ pub fn portal_page_edit_dyn() -> impl IntoView {
                                 <tbody> 
                                 {    
                                     let mut html: Vec<HtmlElement<Tr>> = vec![];
+                                    let mut edit: Vec<HtmlElement<Dialog>> = vec![];
                                     match a {
                                         Ok(data) => {
                                             for portals in data.clone().portals {
-                                                html.push(view! {<tr><th>{portals.index}</th><td>{portals.frameBlockId}</td><td>{portals.lightWithItemId}</td><td>{portals.color_b}</td><td>{portals.color_g}</td><td>{portals.color_r}</td><td><a class="btn btn-ghost bg-warning-content">EDIT</a></td><td><a class="btn btn-ghost bg-error-content">REMOVE</a></td></tr>});
+                                                let open = portals.index.clone()+".showModal()";
+                                                html.push(view! {<tr><th>{portals.index.clone()}</th><td>{portals.frameBlockId.clone()}</td><td>{portals.lightWithItemId.clone()}</td><td>{portals.color_b}</td><td>{portals.color_g}</td><td>{portals.color_r}</td><td><a class="btn btn-outline btn-warning" onclick={open}>EDIT</a></td><td><a class="btn btn-outline btn-error">REMOVE</a></td></tr>});
+                                                edit.push(view! {<dialog id={portals.index.clone()} class="modal"><div class="modal-box"><h3 class="font-bold text-lg">Edit {portals.index.clone()}</h3><div class="py-4 grid grid-rows-3 grid-flow-col gap-4"><div><a>INDEX: </a><input type="text" placeholder="INDEX" class="input input-bordered w-full max-w-xs" value={portals.index.clone()} disabled /></div><div><a>Frame Block: </a><input type="text" placeholder="FRAME BLOCK" class="input input-bordered w-full max-w-xs" value={portals.frameBlockId.clone()} /></div><div><a>Light With Item: </a><input type="text" placeholder="Light With Item" class="input input-bordered w-full max-w-xs" value={portals.lightWithItemId.clone()} /></div><div><a>Color B: </a><input type="text" placeholder="Color B" class="input input-bordered w-full max-w-xs" value={portals.color_b.clone()} /></div><div><a>Color G: </a><input type="text" placeholder="Color G" class="input input-bordered w-full max-w-xs" value={portals.color_g.clone()} /></div><div><a>Color R: </a><input type="text" placeholder="Color R" class="input input-bordered w-full max-w-xs" value={portals.color_r.clone()} /></div></div><button class="btn btn-outline btn-success">SAVE</button></div><form method="dialog" class="modal-backdrop"><button>close</button></form></dialog>});
                                             }
-                                            html
+                                            (html, edit)
                                         },
                                         Err(e) => {
                                             html.push(view! {<tr>{format!("{:?}", e)}</tr>});
                                             // TODO
-                                            html
+                                            (html, edit)
                                         }
                                     }
                                 }
