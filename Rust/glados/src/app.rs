@@ -1,9 +1,14 @@
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit}};
+use std::collections::HashMap;
+
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::Server}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit}};
+use http::header::CONTENT_TYPE;
 use leptos::{*, html::Tr};
 use leptos_meta::*;
 use leptos_router::*;
 use leptos::{error::Result, *};
+use reqwasm::http::RequestMode;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use stylers::style;
 
 use crate::structs::server::ServerVec;
@@ -70,6 +75,18 @@ fn HomePage() -> impl IntoView {
     }
 }
 
+// pub async fn get_server(uuid: String) -> Result<Server> {
+//     let res = reqwasm::http::Request::get(&format!(
+//         "/api/servers/{}", uuid,
+//     ))
+//     .send()
+//     .await?
+//     .json::<Server>()
+//     .await?;
+//     Ok(res)
+//     // Err(GLaDOSError::ERROR.into())
+// }
+
 pub async fn get_servers() -> Result<ServerVec> {
     let res = reqwasm::http::Request::get(&format!(
         "/api/servers",
@@ -81,6 +98,52 @@ pub async fn get_servers() -> Result<ServerVec> {
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
 }
+
+pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Result<ServerVec> {
+    // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    let content = json!({
+        "uuid": uuid,
+        "name": name,
+        "ip": ip,
+        "port": port,
+    });
+    let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
+    let res = reqwasm::http::Request::put(&format!(
+        "/api/servers/{}", &uuid,
+    ))
+    .header("Content-Type", "application/json")
+    .body(body)
+    .send()
+    .await?
+    .json::<ServerVec>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn post_server(uuid: String, ip: String, port: u16, name: String) -> Result<ServerVec> {
+    // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    let content = json!({
+        "uuid": uuid,
+        "name": name,
+        "ip": ip,
+        "port": port,
+    });
+    let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
+    let res = reqwasm::http::Request::post(&format!(
+        "/api/servers",
+    ))
+    .header("Content-Type", "application/json")
+    .body(body)
+    .send()
+    .await?
+    .json::<ServerVec>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+// TODO Delete server based on UUID
 
 pub async fn get_portals() -> Result<PortalVec> {
     let res = reqwasm::http::Request::get(&format!(
