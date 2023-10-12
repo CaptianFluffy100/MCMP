@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::Server}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::Server}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage}};
 use http::header::CONTENT_TYPE;
 use leptos::{*, html::Tr};
 use leptos_meta::*;
@@ -53,25 +53,6 @@ pub fn App() -> impl IntoView {
                 </Router>
             </body>
         </html>    
-    }
-}
-
-/// Renders the home page of your application.
-#[component]
-fn HomePage() -> impl IntoView {
-    // Creates a reactive value to update the button
-    view! {
-        <div class="navbar bg-base-100 h-full" style="height: 100%;">
-            <div class="drawer h-full" style="height: 100%;">
-              <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-              <div class="drawer-content" style="height: 100%;">
-                // <div inner-html={page_data}/>
-                <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
-                // {ServerPageDyn}
-              </div> 
-              {PopulateSideBar}
-            </div>
-        </div>
     }
 }
 
@@ -192,3 +173,19 @@ pub fn PopulateSideBar() -> impl IntoView {
     }
 }
 
+#[component]
+pub fn GladosMainBtn() -> impl IntoView {
+
+    view! {
+        <label for="my-drawer" class="btn btn-ghost drawer-button">
+            <label>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                <path stroke="blue" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 12 8 Q 4 4 8 12 M 12 8 Q 20 4 16 12 M 16 12 Q 20 20 12 16 M 12 16 Q 4 20 8 12 M 7 7 Q 12 16 17 7 M 17 17 Q 12 8 7 17 M 17 7 Q 8 12 17 17 M 7 7 Q 16 12 7 17"></path>
+                <path stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 11 11 L 13 11 L 13 13 L 11 13 L 11 11 L 13 13"></path>
+                <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 2 12 C 2 0 22 0 22 12 M 2 12 C 2 25 22 25 22 12"></path>
+              </svg>
+            </label>
+            GLaDOS
+        </label>
+    }
+}

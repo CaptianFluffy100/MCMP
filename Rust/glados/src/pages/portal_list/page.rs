@@ -1,4 +1,4 @@
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_portals}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_portals, GladosMainBtn}};
 use leptos::{*, html::Tr};
 use leptos_meta::*;
 use leptos_router::*;
@@ -22,7 +22,7 @@ pub fn PortalPage() -> impl IntoView {
               <input id="my-drawer" type="checkbox" class="drawer-toggle" />
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
-                <label for="my-drawer" class="btn btn-ghost drawer-button">GLaDOS</label>
+                {GladosMainBtn}
                 {PortalPageDyn}
               </div> 
               {PopulateSideBar}
