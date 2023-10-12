@@ -1,88 +1,27 @@
+# GLADOS Start Guide
 
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 2424" class="inline-block w-6 h-6 stroke-current">
-    <path stroke="blue" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 12 8 Q 4 4 8 12 M 12 8 Q 20 4 16 12 M 16 12 Q 20 20 12 16 M 12 16 Q 4 20 8 12 M 7 7 Q 12 16 17 7 M 17 17 Q 12 8 7 17 M 17 7 Q 8 12 17 17 M 7 7 Q 16 12 7 17"></path>
-    <path stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 11 11 L 13 11 L 13 13 L 11 13 L 11 11 L 13 13"></path>
-    <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 2 12 C 2 0 22 0 22 12 M 2 12 C 2 25 22 25 22 12"></path>
-</svg>>
+This is a basic startup guide for GLADOS.
 
-# Leptos Axum Starter Template
+## About
 
-This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool using [Axum](https://github.com/tokio-rs/axum).
+GLADOS is a program that runs on a server to connect serveral Minecraft servers together with portals.  The mod needed to do this is MCMP (Minecraft Multiverse Portal) mod.  This mod sits on the Minecraft server.
 
-## Creating your template repo
+You use GLADOS to set portal definitions that when built and then lite will create a portal instance which you can then set the instance to linkup with another portal instance.  You can have inter-server connections and outer-server connections.
 
-If you don't have `cargo-leptos` installed you can install it with
+Inter-server connections will teleport you from one portal to another on the save MC server.  Outer-server connections will transfore player data between servers and then move the player to the new server to the portals position.
 
-```bash
-cargo install cargo-leptos
-```
+## Edit server
 
-Then run
-```bash
-cargo leptos new --git leptos-rs/start-axum
-```
+This page alows you to edit server info.  IP, Port and Name. And delete the server.
 
-to generate a new project template.
+The Minecraft Server can make these edits as well.
 
-```bash
-cd glados
-```
+## Edit Portal Definitions
 
-to go to your newly created project.  
-Feel free to explore the project structure, but the best place to start with your application code is in `src/app.rs`.  
-Addtionally, Cargo.toml may need updating as new versions of the dependencies are released, especially if things are not working after a `cargo update`.
+This page alows you to edit portal definitions.  Build block, light with item, colors (r,g,b).
+
+This defines what a portal is to the servers so the server knows what is a portal, and what is not a portal.  It will also set the portal color for more customization.
 
 ## Running your project
 
-```bash
-cargo leptos watch
-```
-
-## Installing Additional Tools
-
-By default, `cargo-leptos` uses `nightly` Rust, `cargo-generate`, and `sass`. If you run into any trouble, you may need to install one or more of these tools.
-
-1. `rustup toolchain install nightly --allow-downgrade` - make sure you have Rust nightly
-2. `rustup target add wasm32-unknown-unknown` - add the ability to compile Rust to WebAssembly
-3. `cargo install cargo-generate` - install `cargo-generate` binary (should be installed automatically in future)
-4. `npm install -g sass` - install `dart-sass` (should be optional in future
-
-## Compiling for Release
-```bash
-cargo leptos build --release
-```
-
-Will generate your server binary in target/server/release and your site package in target/site
-
-## Testing Your Project
-```bash
-cargo leptos end-to-end
-```
-
-```bash
-cargo leptos end-to-end --release
-```
-
-Cargo-leptos uses Playwright as the end-to-end test tool.  
-Tests are located in end2end/tests directory.
-
-## Executing a Server on a Remote Machine Without the Toolchain
-After running a `cargo leptos build --release` the minimum files needed are:
-
-1. The server binary located in `target/server/release`
-2. The `site` directory and all files within located in `target/site`
-
-Copy these files to your remote server. The directory structure should be:
-```text
-glados
-site/
-```
-Set the following environment variables (updating for your project as needed):
-```text
-LEPTOS_OUTPUT_NAME="glados"
-LEPTOS_SITE_ROOT="site"
-LEPTOS_SITE_PKG_DIR="pkg"
-LEPTOS_SITE_ADDR="127.0.0.1:3000"
-LEPTOS_RELOAD_PORT="3001"
-```
-Finally, run the server binary.
+// Example here for Windows Linux and Mac
