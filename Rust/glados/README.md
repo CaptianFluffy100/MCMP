@@ -18,10 +18,10 @@ The Minecraft Server can make these edits as well.
 
 ## Edit Portal Definitions
 
-This page alows you to edit portal definitions.  Build block, light with item, colors (r,g,b).
+This page alows you to edit portal definitions.  Build block, light with item, colors (r,g,b).  You can add and delete portal defs from this page.
 
 This defines what a portal is to the servers so the server knows what is a portal, and what is not a portal.  It will also set the portal color for more customization.
 
 ## Running your project
 
-// Example here for Windows Linux and Mac
+// Example here for Windows Linux Mac and Arm
