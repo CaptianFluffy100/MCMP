@@ -1,7 +1,10 @@
-<picture>
-    <source srcset="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_Solid_White.svg" media="(prefers-color-scheme: dark)">
-    <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo">
-</picture>
+<label>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+        <path stroke="blue" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 12 8 Q 4 4 8 12 M 12 8 Q 20 4 16 12 M 16 12 Q 20 20 12 16 M 12 16 Q 4 20 8 12 M 7 7 Q 12 16 17 7 M 17 17 Q 12 8 7 17 M 17 7 Q 8 12 17 17 M 7 7 Q 16 12 7 17"></path>
+        <path stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 11 11 L 13 11 L 13 13 L 11 13 L 11 11 L 13 13"></path>
+        <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M 2 12 C 2 0 22 0 22 12 M 2 12 C 2 25 22 25 22 12"></path>
+    </svg>
+</label>
 
 # Leptos Axum Starter Template
 
