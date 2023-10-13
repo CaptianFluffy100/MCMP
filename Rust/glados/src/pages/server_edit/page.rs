@@ -49,15 +49,15 @@ pub fn ServerPageEdit() -> impl IntoView {
             .parse()
             .unwrap();
         // write_put_uuid(value);
-        log::debug!("Value: {}", value_uuid.clone());
-        log::debug!("Value: {}", value_name.clone());
-        log::debug!("Value: {}", value_ip.clone());
-        log::debug!("Value: {}", value_port.clone());
+        // log::debug!("Value: {}", value_uuid.clone());
+        // log::debug!("Value: {}", value_name.clone());
+        // log::debug!("Value: {}", value_ip.clone());
+        // log::debug!("Value: {}", value_port.clone());
 
-        let _uuid = value_uuid.clone();
-        let _ip = value_ip.clone();
-        let _port = value_port.clone();
-        let _name = value_name.clone();
+        // let _uuid = value_uuid.clone();
+        // let _ip = value_ip.clone();
+        // let _port = value_port.clone();
+        // let _name = value_name.clone();
         
         let stable = create_local_resource( move || (value_uuid.clone(),value_ip.clone(),value_port.clone(),value_name.clone()), 
         move |(_uuid, _ip, _port, _name)| async move { post_server(_uuid.clone(), _ip.clone(), _port.clone(), _name.clone()).await });
@@ -213,18 +213,20 @@ pub fn server_page_edit_forms_dyn(name: String, uuid: String, ip: String, port: 
             .parse()
             .unwrap();
         // write_put_uuid(value);
-        log::debug!("Value: {}", value_uuid.clone());
-        log::debug!("Value: {}", value_name.clone());
-        log::debug!("Value: {}", value_ip.clone());
-        log::debug!("Value: {}", value_port.clone());
+        // log::debug!("Value: {}", value_uuid.clone());
+        // log::debug!("Value: {}", value_name.clone());
+        // log::debug!("Value: {}", value_ip.clone());
+        // log::debug!("Value: {}", value_port.clone());
 
-        let _uuid = value_uuid.clone();
-        let _ip = value_ip.clone();
-        let _port = value_port.clone();
-        let _name = value_name.clone();
+        // let _uuid = value_uuid.clone();
+        // let _ip = value_ip.clone();
+        // let _port = value_port.clone();
+        // let _name = value_name.clone();
         
         let stable = create_local_resource( move || (value_uuid.clone(),value_ip.clone(),value_port.clone(),value_name.clone()), 
         move |(_uuid, _ip, _port, _name)| async move { put_server(_uuid.clone(), _ip.clone(), _port.clone(), _name.clone()).await });
+
+        
     };
 
     
@@ -277,7 +279,7 @@ pub fn server_page_remove_forms_dyn(name: String, uuid: String) -> impl IntoView
             .expect("<input> to exist")
             .value();
         // write_put_uuid(value);
-        log::debug!("Value: {}", value_uuid.clone());
+        // log::debug!("Value: {}", value_uuid.clone());
 
         let _uuid = value_uuid.clone();
         
@@ -285,6 +287,29 @@ pub fn server_page_remove_forms_dyn(name: String, uuid: String) -> impl IntoView
             log::debug!("Deleting Server: {}", _uuid);
             let stable = create_local_resource( move || value_uuid.clone(), 
             move |_uuid| async move { delete_server(_uuid.clone()).await });
+
+            match stable.get() {
+                Some(data) => {
+                    // view! {
+                    //     <div class="toast">
+                    //       <div class="alert alert-success">
+                    //         <span>New message arrived.</span>
+                    //       </div>
+                    //     </div>
+                    // };
+                    log::debug!("Data: {:?}", data);
+                },
+                None => {
+                    // view! {
+                    //     <div class="toast">
+                    //       <div class="alert alert-error">
+                    //         <span>New message arrived.</span>
+                    //       </div>
+                    //     </div>
+                    // };
+                    log::debug!("NULL");
+                }
+            }
         }
     };
 
