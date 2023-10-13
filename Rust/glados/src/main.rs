@@ -23,7 +23,7 @@ struct Server {
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    use axum::{routing::{post, get}, Router};
+    use axum::{routing::{post, get, put, delete}, Router};
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use glados::app::{*};
     use glados::fileserv::file_and_error_handler;
@@ -54,6 +54,7 @@ async fn main() {
         .route("/api/servers/:uuid", post(api::server::post::edit_server))
         .route("/api/portals", get(api::portal::get::list_portals))
         .route("/api/portals", post(api::server::post::add_server))
+        .route("/api/servers/:uuid", put(api::server::put::edit_server))
         .leptos_routes(&leptos_options, routes, App)
         .fallback(file_and_error_handler)
         .with_state(leptos_options);

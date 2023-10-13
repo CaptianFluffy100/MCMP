@@ -29,6 +29,7 @@ serde_json = "1.0.107"
 uuid = "1.4.1"
 reqwasm = "0.5.0"
 stylers = "0.3.2"
+wasm-bindgen-futures = "0.4.37"
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]

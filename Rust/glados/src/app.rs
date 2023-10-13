@@ -69,6 +69,7 @@ pub fn App() -> impl IntoView {
 // }
 
 pub async fn get_servers() -> Result<ServerVec> {
+    log::debug!("Get Servers");
     let res = reqwasm::http::Request::get(&format!(
         "/api/servers",
     ))
@@ -80,7 +81,20 @@ pub async fn get_servers() -> Result<ServerVec> {
     // Err(GLaDOSError::ERROR.into())
 }
 
-pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Result<ServerVec> {
+pub async fn get_server(uuid: String) -> Result<Server> {
+    let res = reqwasm::http::Request::get(&format!(
+        "/api/servers/{}", uuid,
+    ))
+    .send()
+    .await?
+    .json::<Server>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Result<Server> {
+    log::debug!("Content PUT: {}", uuid);
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
     let content = json!({
         "uuid": uuid,
@@ -88,6 +102,7 @@ pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Re
         "ip": ip,
         "port": port,
     });
+    log::debug!("Content PUT: {}", content);
     let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::put(&format!(
         "/api/servers/{}", &uuid,
@@ -96,13 +111,13 @@ pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Re
     .body(body)
     .send()
     .await?
-    .json::<ServerVec>()
+    .json::<Server>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
 }
 
-pub async fn post_server(uuid: String, ip: String, port: u16, name: String) -> Result<ServerVec> {
+pub async fn post_server(uuid: String, ip: String, port: u16, name: String) -> Result<Server> {
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
     let content = json!({
         "uuid": uuid,
@@ -118,7 +133,29 @@ pub async fn post_server(uuid: String, ip: String, port: u16, name: String) -> R
     .body(body)
     .send()
     .await?
-    .json::<ServerVec>()
+    .json::<Server>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn delete_server(uuid: String) -> Result<Server> {
+    // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    // let content = json!({
+    //     "uuid": uuid,
+    //     "name": name,
+    //     "ip": ip,
+    //     "port": port,
+    // });
+    // let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
+    let res = reqwasm::http::Request::delete(&format!(
+        "/api/servers/{}", uuid,
+    ))
+    // .header("Content-Type", "application/json")
+    // .body(body)
+    .send()
+    .await?
+    .json::<Server>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
