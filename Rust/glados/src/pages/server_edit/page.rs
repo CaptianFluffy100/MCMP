@@ -1,4 +1,4 @@
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_servers, GladosMainBtn, put_server, post_server}, api::schema::Server};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_servers, GladosMainBtn, put_server, post_server, delete_server}, api::schema::Server};
 use leptos::{*, html::{Tr, Dialog, Input}, ev::SubmitEvent};
 use leptos_meta::*;
 use leptos_router::*;
@@ -94,14 +94,9 @@ pub fn ServerPageEdit() -> impl IntoView {
                                     <input type="text" placeholder="PORT" class="input input-bordered w-full max-w-xs" value=read_put_port node_ref=input_element_port />
                                 </div>
                             </div>
-                            // <div class="grid grid-rows-2 gap-4">
-                            <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
-                                // <div>
-                                //     <form id="close" method="dialog w-full">
-                                //         <input class="btn btn-outline btn-error w-full" type="submit" value="CLOSE"/>
-                                //     </form>
-                                // </div>
-                            // </div>
+                            <div class="grid grid-rows-1 gap-4">
+                                <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
+                            </div>
                         </div>
                     </form>
                 </dialog>
@@ -152,6 +147,7 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                 {    
                                     let mut html: Vec<HtmlElement<Tr>> = vec![];
                                     let mut edit: Vec<HtmlElement<Dialog>> = vec![];
+                                    let mut remove: Vec<HtmlElement<Dialog>> = vec![];
                                     // if html.len() == 0 {
                                     //     html = html + &format!("{:?}", a);
                                     // }
@@ -159,17 +155,20 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                     match a {
                                         Ok(data) => {
                                             for server in data.clone() {
-                                                let open = server.id.clone().to_string().replace("-", "")+".showModal()";
-                                                html.push(view! {<tr><th>{server.name.clone()}</th><td>{server.id.clone().to_string()}</td><td>{server.ip.clone()}</td><td>{server.port}</td><td><a class="btn btn-outline btn-warning" onclick={open}>EDIT</a></td><td><a class="btn btn-outline btn-error">REMOVE</a></td></tr>});
+                                                let open_edit = "edit".to_string()+&server.id.clone().to_string().replace("-", "")+".showModal()";
+                                                let open_remove = "remove".to_string()+&server.id.clone().to_string().replace("-", "")+".showModal()";
+                                                html.push(view! {<tr><th>{server.name.clone()}</th><td>{server.id.clone().to_string()}</td><td>{server.ip.clone()}</td><td>{server.port}</td><td><a class="btn btn-outline btn-warning" onclick={open_edit}>EDIT</a></td><td><a class="btn btn-outline btn-error" onclick={open_remove}>REMOVE</a></td></tr>});
                                                 let edit_props = ServerPageEditFormsDynProps{name: server.name.clone(), uuid: server.id.clone().to_string(), ip: server.ip.clone().to_string(), port: server.port.clone()};
-                                                edit.push(view! {<dialog id={server.id.clone().to_string().replace("-", "")} class="modal">{ServerPageEditFormsDyn(edit_props)}</dialog>});
+                                                edit.push(view! {<dialog id={"edit".to_string()+&server.id.clone().to_string().replace("-", "")} class="modal">{ServerPageEditFormsDyn(edit_props)}</dialog>});
+                                                let remove_props = ServerPageRemoveFormsDynProps{uuid: server.id.clone().to_string(), name: server.name.clone().to_string()};
+                                                remove.push(view! {<dialog id={"remove".to_string()+&server.id.clone().to_string().replace("-", "")} class="modal">{ServerPageRemoveFormsDyn(remove_props)}</dialog>});
                                             }
-                                            (html, edit)
+                                            (html, edit, remove)
                                         },
                                         Err(e) => {
                                             html.push(view! {<tr>{format!("{:?}", e)}</tr>});
                                             // TODO
-                                            (html, edit)
+                                            (html, edit, remove)
                                         }
                                     }
                                 }
@@ -193,15 +192,6 @@ pub fn server_page_edit_forms_dyn(name: String, uuid: String, ip: String, port: 
     let input_element_name: NodeRef<Input> = create_node_ref();
     let input_element_ip: NodeRef<Input> = create_node_ref();
     let input_element_port: NodeRef<Input> = create_node_ref();
-
-    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
-        // the first is the "source signal"
-        || (),
-        // the second is the loader
-        // it takes the source signal's value as its argument
-        // and does some async work
-        |_| async move { get_servers().await },
-    );
 
     let on_submit = move |ev: SubmitEvent| {
         // stop the page from reloading!
@@ -261,11 +251,60 @@ pub fn server_page_edit_forms_dyn(name: String, uuid: String, ip: String, port: 
                         <input type="text" placeholder="PORT" class="input input-bordered w-full max-w-xs" value=read_put_port node_ref=input_element_port />
                     </div>
                 </div>
-                <div class="grid grid-rows-2 gap-4">
+                <div class="grid grid-rows-1 gap-4">
                     <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
-                    <form method="dialog w-full">
-                        <input class="btn btn-outline btn-error w-full" type="submit" value="CLOSE"/>
-                    </form>
+                </div>
+            </div>
+        </form>
+    }
+
+}
+
+#[component]
+pub fn server_page_remove_forms_dyn(name: String, uuid: String) -> impl IntoView {
+    let (read_put_uuid, write_put_uuid) = create_signal("".to_string());
+
+    let input_element_uuid: NodeRef<Input> = create_node_ref();
+
+    let uuid_org = uuid.clone();
+
+    let on_submit = move |ev: SubmitEvent| {
+        // stop the page from reloading!
+        ev.prevent_default();
+
+        // here, we'll extract the value from the input
+        let value_uuid = input_element_uuid()
+            .expect("<input> to exist")
+            .value();
+        // write_put_uuid(value);
+        log::debug!("Value: {}", value_uuid.clone());
+
+        let _uuid = value_uuid.clone();
+        
+        if _uuid == uuid_org {
+            log::debug!("Deleting Server: {}", _uuid);
+            let stable = create_local_resource( move || value_uuid.clone(), 
+            move |_uuid| async move { delete_server(_uuid.clone()).await });
+        }
+    };
+
+    
+
+    view! {
+        <form on:submit=on_submit>
+            <div class="modal-box w-full">
+                <h3 class="font-bold text-sm">Delete Server {name.clone()}.  Type in the UUID to procced.</h3>
+                <h3 class="font-bold text-sm">{uuid.clone()}</h3>
+                <div class="py-4 grid grid-rows-1 grid-flow-col gap-4">
+                    <div>
+                        <input type="text" placeholder="UUID" class="input input-bordered w-full max-w-xs" value=read_put_uuid node_ref=input_element_uuid/>
+                    </div>
+                </div>
+                <div class="btn btn-outline btn-warning w-full">
+                    This process can NOT be reversed.
+                </div>
+                <div class="grid grid-rows-1 gap-8">
+                    <input class="btn btn-outline btn-error" type="submit" value="DELETE"/>
                 </div>
             </div>
         </form>
