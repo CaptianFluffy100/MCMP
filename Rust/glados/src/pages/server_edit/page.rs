@@ -1,22 +1,69 @@
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::Server}, app::{PopulateSideBar, get_servers, GladosMainBtn, put_server}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_servers, GladosMainBtn, put_server, post_server}, api::schema::Server};
 use leptos::{*, html::{Tr, Dialog, Input}, ev::SubmitEvent};
 use leptos_meta::*;
 use leptos_router::*;
 use leptos::{error::Result, *};
 use serde::{Deserialize, Serialize};
 use stylers::style;
-use wasm_bindgen_futures::spawn_local;
 
 use crate::structs::server::ServerVec;
 
 #[component]
 pub fn ServerPageEdit() -> impl IntoView {
-    // Creates a reactive value to update the button
-    // let (count, set_count) = create_signal(0);
-    // let on_click = move |_| set_count.update(|count| *count += 1);
-    // let get_server_list = move |_| set_count.update(|count| *count += 1);
-    // let (servers, set_servers) = create_signal();
+    let (read_put_uuid, write_put_uuid) = create_signal("".to_string());
+    let (read_put_name, write_put_name) = create_signal("".to_string());
+    let (read_put_ip, write_put_ip) = create_signal("0.0.0.0".to_string());
+    let (read_put_port, write_put_port) = create_signal(25565);
 
+    let input_element_uuid: NodeRef<Input> = create_node_ref();
+    let input_element_name: NodeRef<Input> = create_node_ref();
+    let input_element_ip: NodeRef<Input> = create_node_ref();
+    let input_element_port: NodeRef<Input> = create_node_ref();
+
+    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
+        // the first is the "source signal"
+        || (),
+        // the second is the loader
+        // it takes the source signal's value as its argument
+        // and does some async work
+        |_| async move { get_servers().await },
+    );
+
+    let on_submit = move |ev: SubmitEvent| {
+        // stop the page from reloading!
+        ev.prevent_default();
+
+        // here, we'll extract the value from the input
+        let value_uuid = input_element_uuid()
+            .expect("<input> to exist")
+            .value();
+        let value_name = input_element_name()
+            .expect("<input> to exist")
+            .value();
+        let value_ip = input_element_ip()
+            .expect("<input> to exist")
+            .value();
+        let value_port: u16 = input_element_port()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        // write_put_uuid(value);
+        log::debug!("Value: {}", value_uuid.clone());
+        log::debug!("Value: {}", value_name.clone());
+        log::debug!("Value: {}", value_ip.clone());
+        log::debug!("Value: {}", value_port.clone());
+
+        let _uuid = value_uuid.clone();
+        let _ip = value_ip.clone();
+        let _port = value_port.clone();
+        let _name = value_name.clone();
+        
+        let stable = create_local_resource( move || (value_uuid.clone(),value_ip.clone(),value_port.clone(),value_name.clone()), 
+        move |(_uuid, _ip, _port, _name)| async move { post_server(_uuid.clone(), _ip.clone(), _port.clone(), _name.clone()).await });
+    };
+
+    let open = "add.showModal()";
     view! {
         <div class="navbar bg-base-100 h-full" style="height: 100%;">
             <div class="drawer h-full" style="height: 100%;">
@@ -24,7 +71,40 @@ pub fn ServerPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 {GladosMainBtn}
-                <a class="btn btn-outline float-right btn-success">ADD</a>
+                <a class="btn btn-outline float-right btn-success" onclick={open}>ADD</a>
+                <dialog id="add" class="modal">
+                    <form on:submit=on_submit>
+                        <div class="modal-box">
+                            <h3 class="font-bold text-lg">Add New Server</h3>
+                            <div class="py-4 grid grid-rows-2 grid-flow-col gap-4">
+                                <div>
+                                    <a>UUID: </a>
+                                    <input type="text" placeholder="UUID" class="input input-bordered w-full max-w-xs" value=read_put_uuid node_ref=input_element_uuid/>
+                                </div>
+                                <div>
+                                    <a>NAME: </a>
+                                    <input type="text" placeholder="NAME" class="input input-bordered w-full max-w-xs" value=read_put_name node_ref=input_element_name />
+                                </div>
+                                <div>
+                                    <a>IP: </a>
+                                    <input type="text" placeholder="IP" class="input input-bordered w-full max-w-xs" value=read_put_ip node_ref=input_element_ip />
+                                </div>
+                                <div>
+                                    <a>PORT: </a>
+                                    <input type="text" placeholder="PORT" class="input input-bordered w-full max-w-xs" value=read_put_port node_ref=input_element_port />
+                                </div>
+                            </div>
+                            // <div class="grid grid-rows-2 gap-4">
+                            <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
+                                // <div>
+                                //     <form id="close" method="dialog w-full">
+                                //         <input class="btn btn-outline btn-error w-full" type="submit" value="CLOSE"/>
+                                //     </form>
+                                // </div>
+                            // </div>
+                        </div>
+                    </form>
+                </dialog>
                 {ServerPageEditDyn}
               </div> 
               {PopulateSideBar}
@@ -38,7 +118,7 @@ pub fn server_page_edit_dyn() -> impl IntoView {
     // let (read_put_uuid, write_put_uuid) = create_signal(0);
     // let input_element: NodeRef<Input> = create_node_ref();
 
-    let async_data: Resource<(), std::result::Result<ServerVec, error::Error>> = create_local_resource(
+    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
         // the first is the "source signal"
         || (),
         // the second is the loader
@@ -78,11 +158,11 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                     // format!("{:?}", a);
                                     match a {
                                         Ok(data) => {
-                                            for server in data.clone().servers {
-                                                let open = server.uuid.clone()+".showModal()";
-                                                html.push(view! {<tr><th>{server.name.clone()}</th><td>{server.uuid.clone()}</td><td>{server.ip.clone()}</td><td>{server.port}</td><td><a class="btn btn-outline btn-warning" onclick={open}>EDIT</a></td><td><a class="btn btn-outline btn-error">REMOVE</a></td></tr>});
-                                                let edit_props = ServerPageEditFormsDynProps{name: server.name.clone(), uuid: server.uuid.clone(), ip: server.ip.clone(), port: server.port.clone()};
-                                                edit.push(view! {<dialog id={server.uuid.clone()} class="modal">{ServerPageEditFormsDyn(edit_props)}</dialog>});
+                                            for server in data.clone() {
+                                                let open = server.id.clone().to_string().replace("-", "")+".showModal()";
+                                                html.push(view! {<tr><th>{server.name.clone()}</th><td>{server.id.clone().to_string()}</td><td>{server.ip.clone()}</td><td>{server.port}</td><td><a class="btn btn-outline btn-warning" onclick={open}>EDIT</a></td><td><a class="btn btn-outline btn-error">REMOVE</a></td></tr>});
+                                                let edit_props = ServerPageEditFormsDynProps{name: server.name.clone(), uuid: server.id.clone().to_string(), ip: server.ip.clone().to_string(), port: server.port.clone()};
+                                                edit.push(view! {<dialog id={server.id.clone().to_string().replace("-", "")} class="modal">{ServerPageEditFormsDyn(edit_props)}</dialog>});
                                             }
                                             (html, edit)
                                         },
@@ -114,7 +194,7 @@ pub fn server_page_edit_forms_dyn(name: String, uuid: String, ip: String, port: 
     let input_element_ip: NodeRef<Input> = create_node_ref();
     let input_element_port: NodeRef<Input> = create_node_ref();
 
-    let async_data: Resource<(), std::result::Result<ServerVec, error::Error>> = create_local_resource(
+    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
         // the first is the "source signal"
         || (),
         // the second is the loader
@@ -166,7 +246,7 @@ pub fn server_page_edit_forms_dyn(name: String, uuid: String, ip: String, port: 
                 <div class="py-4 grid grid-rows-2 grid-flow-col gap-4">
                     <div>
                         <a>UUID: </a>
-                        <input type="text" placeholder="UUID" class="input input-bordered w-full max-w-xs" value=read_put_uuid node_ref=input_element_uuid />
+                        <input type="text" placeholder="UUID" class="input input-bordered w-full max-w-xs" value=read_put_uuid node_ref=input_element_uuid disabled/>
                     </div>
                     <div>
                         <a>NAME: </a>
@@ -181,12 +261,13 @@ pub fn server_page_edit_forms_dyn(name: String, uuid: String, ip: String, port: 
                         <input type="text" placeholder="PORT" class="input input-bordered w-full max-w-xs" value=read_put_port node_ref=input_element_port />
                     </div>
                 </div>
-
-                <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
-                
-
+                <div class="grid grid-rows-2 gap-4">
+                    <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
+                    <form method="dialog w-full">
+                        <input class="btn btn-outline btn-error w-full" type="submit" value="CLOSE"/>
+                    </form>
+                </div>
             </div>
-            <form method="dialog" class="modal-backdrop"><button>close</button></form>
         </form>
     }
 

@@ -1,4 +1,4 @@
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_servers, GladosMainBtn}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_servers, GladosMainBtn}, api::schema::Server};
 use leptos::{*, html::Tr};
 use leptos_meta::*;
 use leptos_router::*;
@@ -33,7 +33,7 @@ pub fn ServerPage() -> impl IntoView {
 
 #[component]
 pub fn server_page_dyn() -> impl IntoView {
-    let async_data: Resource<(), std::result::Result<ServerVec, error::Error>> = create_local_resource(
+    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
         // the first is the "source signal"
         || (),
         // the second is the loader
@@ -68,8 +68,8 @@ pub fn server_page_dyn() -> impl IntoView {
                                     // format!("{:?}", a);
                                     match a {
                                         Ok(data) => {
-                                            for server in data.clone().servers {
-                                                html.push(view! {<tr><th>{server.name}</th><td>{server.uuid}</td><td>{server.ip}</td><td>{server.port}</td></tr>});
+                                            for server in data.clone() {
+                                                html.push(view! {<tr><th>{server.name}</th><td>{server.id.to_string()}</td><td>{server.ip}</td><td>{server.port}</td></tr>});
                                             }
                                             html
                                         },

@@ -9,7 +9,6 @@ use glados::api::handlers::db_setup;
 use crate::state::ServerState;
 // use serde::Deserialize;
 
-pub mod database_;
 pub mod database;
 pub mod structs;
 mod api;

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::Server}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::{ServerVec}}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage}};
 use http::header::CONTENT_TYPE;
 use leptos::{*, html::Tr};
 use leptos_meta::*;
@@ -24,8 +24,8 @@ pub fn App() -> impl IntoView {
             // injects a stylesheet into the document <head>
             // id=leptos means cargo-leptos will hot-reload this stylesheet
             <Stylesheet id="leptos" href="/pkg/glados.css"/>
-            // <Stylesheet id="tailwind" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"/>
-            // <Stylesheet id="daisyui" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css"/>
+            <Stylesheet id="tailwind" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"/>
+            <Stylesheet id="daisyui" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css"/>
 
             <Script id="htmx" src="https://unpkg.com/htmx.org@1.9.6"/>
 
@@ -69,7 +69,7 @@ pub fn App() -> impl IntoView {
 //     // Err(GLaDOSError::ERROR.into())
 // }
 
-pub async fn get_servers() -> Result<ServerVec> {
+pub async fn get_servers() -> Result<Vec<Server>> {
     log::debug!("Get Servers");
     let res = reqwasm::http::Request::get(&format!(
         "/api/server",
@@ -84,7 +84,7 @@ pub async fn get_servers() -> Result<ServerVec> {
 
 pub async fn get_server(uuid: String) -> Result<Server> {
     let res = reqwasm::http::Request::get(&format!(
-        "/api/servers/{}", uuid,
+        "/api/server/{}", uuid,
     ))
     .send()
     .await?
@@ -95,10 +95,10 @@ pub async fn get_server(uuid: String) -> Result<Server> {
 }
 
 pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Result<Server> {
-    log::debug!("Content PUT: {}", uuid);
+    log::debug!("Content PUT: {}", uuid.replace("-", ""));
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
     let content = json!({
-        "uuid": uuid,
+        "id": uuid,
         "name": name,
         "ip": ip,
         "port": port,
@@ -106,7 +106,7 @@ pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Re
     log::debug!("Content PUT: {}", content);
     let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::put(&format!(
-        "/api/servers/{}", &uuid,
+        "/api/server/{}", &uuid,
     ))
     .header("Content-Type", "application/json")
     .body(body)
@@ -121,14 +121,14 @@ pub async fn put_server(uuid: String, ip: String, port: u16, name: String) -> Re
 pub async fn post_server(uuid: String, ip: String, port: u16, name: String) -> Result<Server> {
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
     let content = json!({
-        "uuid": uuid,
+        "id": uuid,
         "name": name,
         "ip": ip,
         "port": port,
     });
     let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::post(&format!(
-        "/api/servers",
+        "/api/server",
     ))
     .header("Content-Type", "application/json")
     .body(body)
@@ -150,7 +150,7 @@ pub async fn delete_server(uuid: String) -> Result<Server> {
     // });
     // let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::delete(&format!(
-        "/api/servers/{}", uuid,
+        "/api/server/{}", uuid,
     ))
     // .header("Content-Type", "application/json")
     // .body(body)
