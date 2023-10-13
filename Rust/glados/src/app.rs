@@ -5,8 +5,9 @@ use leptos_router::*;
 use leptos::{error::Result, *};
 use serde::{Deserialize, Serialize};
 use stylers::style;
+use log::error;
 
-use crate::structs::server::ServerVec;
+use crate::api::schema::Server;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -17,9 +18,9 @@ pub fn App() -> impl IntoView {
         <html class="h-full" style="height: 100%;">
             // injects a stylesheet into the document <head>
             // id=leptos means cargo-leptos will hot-reload this stylesheet
-            // <Stylesheet id="leptos" href="/pkg/glados.css"/>
-            <Stylesheet id="tailwind" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"/>
-            <Stylesheet id="daisyui" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css"/>
+            <Stylesheet id="leptos" href="/pkg/glados.css"/>
+            // <Stylesheet id="tailwind" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"/>
+            // <Stylesheet id="daisyui" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css"/>
 
             <Script id="htmx" src="https://unpkg.com/htmx.org@1.9.6"/>
 
@@ -70,13 +71,13 @@ fn HomePage() -> impl IntoView {
     }
 }
 
-async fn get_servers() -> Result<ServerVec> {
+async fn get_servers() -> Result<Vec<Server>> {
     let res = reqwasm::http::Request::get(&format!(
-        "/api/servers",
+        "/api/server",
     ))
     .send()
     .await?
-    .json::<ServerVec>()
+    .json::<Vec<Server>>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
@@ -107,7 +108,7 @@ fn ServerPage() -> impl IntoView {
 
 #[component]
 pub fn server_page_dyn() -> impl IntoView {
-    let async_data: Resource<(), std::result::Result<ServerVec, error::Error>> = create_local_resource(
+    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
         // the first is the "source signal"
         || (),
         // the second is the loader
@@ -117,48 +118,37 @@ pub fn server_page_dyn() -> impl IntoView {
     );
 
     view! {
-        <Suspense
-            fallback=move || view! { <p class="place-content-center"><span class="loading loading-infinity loading-lg"></span></p> }>
-            {move || {
-                async_data.get()
-                    .map(|a| view! { 
-                        // Display Table
-                        <div class="overflow-x-auto">
-                            <table class="table table-zebra">
-                                <thead>
-                                  <tr>
-                                    <th>Name</th>
-                                    <th>UUID</th>
-                                    <th>IP</th>
-                                    <th>PORT</th>
-                                  </tr>
-                                </thead>
-                                <tbody> 
-                                {    
-                                    let mut html: Vec<HtmlElement<Tr>> = vec![];
-                                    // if html.len() == 0 {
-                                    //     html = html + &format!("{:?}", a);
-                                    // }
-                                    // format!("{:?}", a);
-                                    match a {
-                                        Ok(data) => {
-                                            for server in data.clone().servers {
-                                                html.push(view! {<tr><th>{server.name}</th><td>{server.uuid}</td><td>{server.ip}</td><td>{server.port}</td></tr>});
-                                            }
-                                            html
-                                        },
-                                        Err(e) => {
-                                            html.push(view! {<tr>{format!("{:?}", e)}</tr>});
-                                            // TODO
-                                            html
-                                        }
-                                    }
-                                }
-                               </tbody>
-                           </table>
-                       </div>
-                })
-            }}
+        <Suspense fallback=move || view! { <p class="place-content-center"><span class="loading loading-infinity loading-lg"></span></p> }>
+            <div class="overflow-x-auto">
+                  <table class="table table-zebra">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>UUID</th>
+                          <th>IP</th>
+                          <th>PORT</th>
+                        </tr>
+                      </thead>
+                      <tbody class="font-mono">
+                        {move || {
+                          async_data.get().map(move |servers| match servers {
+                            Ok(servers) => {
+                              if servers.is_empty() {
+                                view! {"No servers :("}.into_view()
+                              } else {
+                                servers.iter().map(move |server| { view! {
+                                  <tr><th>{server.clone().name}</th><td>{server.clone().id.to_string()}</td><td>{server.clone().ip}</td><td>{server.clone().port}</td></tr>
+                                }}).collect_view()
+                              }
+                            }
+                            Err(e) => {
+                              view! {"Failed to get server list"}.into_view()
+                            }
+                          }).collect_view()
+                        }}
+                     </tbody>
+                 </table>
+             </div>
         </Suspense>
     }
 }
@@ -299,7 +289,7 @@ fn ServerPageEdit() -> impl IntoView {
 
 #[component]
 pub fn server_page_edit_dyn() -> impl IntoView {
-    let async_data: Resource<(), std::result::Result<ServerVec, error::Error>> = create_local_resource(
+    let async_data: Resource<(), std::result::Result<Vec<Server>, error::Error>> = create_local_resource(
         // the first is the "source signal"
         || (),
         // the second is the loader
@@ -336,8 +326,8 @@ pub fn server_page_edit_dyn() -> impl IntoView {
                                     // format!("{:?}", a);
                                     match a {
                                         Ok(data) => {
-                                            for server in data.clone().servers {
-                                                html.push(view! {<tr><th>{server.name}</th><td>{server.uuid}</td><td>{server.ip}</td><td>{server.port}</td><td><a class="btn btn-ghost bg-warning-content">EDIT</a></td><td><a class="btn btn-ghost bg-error-content">REMOVE</a></td></tr>});
+                                            for server in data {
+                                                html.push(view! {<tr><th>{server.name}</th><td>{server.id.to_string()}</td><td>{server.ip}</td><td>{server.port}</td><td><a class="btn btn-ghost bg-warning-content">EDIT</a></td><td><a class="btn btn-ghost bg-error-content">REMOVE</a></td></tr>});
                                             }
                                             html
                                         },

@@ -3,6 +3,9 @@ pub mod app;
 pub mod error_template;
 pub mod fileserv;
 pub mod structs;
+pub mod api;
+pub mod database;
+pub mod state;
 
 cfg_if! { if #[cfg(feature = "hydrate")] {
     use leptos::*;

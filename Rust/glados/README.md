@@ -7,6 +7,17 @@
 
 This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool using [Axum](https://github.com/tokio-rs/axum).
 
+## Installing Tailwind & DaisyUI
+
+You can install Tailwind using `npm`:
+
+```bash
+npm install -D tailwindcss
+npm i -D daisyui@latest
+```
+
+If you'd rather not use `npm`, you can install the Tailwind binary [here](https://github.com/tailwindlabs/tailwindcss/releases).
+
 ## Creating your template repo
 
 If you don't have `cargo-leptos` installed you can install it with
@@ -32,7 +43,10 @@ Addtionally, Cargo.toml may need updating as new versions of the dependencies ar
 
 ## Running your project
 
+Tailwind has a nifty compiling option to reduce the css size, so we need to run that to watch our files and update those changes in real time.
+
 ```bash
+npx tailwindcss -i ./input.css -o ./style/output.css --watch
 cargo leptos watch
 ```
 
