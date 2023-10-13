@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  version: 0.0.1
+  title: glados api spec
+
+paths:
+  /server:
+    get:
+      tags:
+        - Server
+      summary: List all the servers
+      description: List all servers with a paginated result. Default will just do 10 servers on page 0 (index starts at zero to keep our sanity). Servers to include in pagination result will be determined by page and per_page parameters in query (both are optional).
+      operationId: listServers
+      parameters:
+        - { in: query, name: page, description: Page number to retrieve, schema: {type: integer} }
+        - { in: query, name: per_page, description: Amount of server to retrieve for that page, schema: { type: integer} }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResult'
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Server'
+    post:
+      tags:
+        - Server
+      summary: Register new server
+      description: Register a new server
+      operationId: registerServer
+      requestBody:
+        description: Register a new server
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Server'
+      responses:
+        '200':
+          description: Registered new server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '404':
+          description: Server already registered
+  /server/{id}:
+    get:
+      tags:
+        - Server
+      summary: Get info about a server
+      description: Get info about a server
+      operationId: getServer
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '404':
+          description: Not server with that id
+    put:
+      tags:
+        - Server
+      summary: Update a server
+      description: Update an already registered server
+      operationId: updateServer
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        description: Register a new server
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Server'
+      responses:
+        '200':
+          description: Successfully updated server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '404':
+          description: Server not found, cannot update
+    delete:
+      tags:
+        - Server
+      summary: Unregister server
+      description: Unregister server and delete all references to the server such as portal instances etc.
+      operationId: deleteServer
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Unregistered server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '404':
+          description: Failed to find server to unregister
+  /server/status:
+    get:
+      tags:
+        - Server
+      summary: Get general status
+      description: Get general overview status, something that might show up in the overview part of a dashboard like  total number of severs, total online, total number of players etc.
+      operationId: serverOverviewStatus
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerStatusOverview'
+  /server/status/{id}:
+    get:
+      tags:
+        - Server
+      summary: Get status of a server
+      description: Get the status of a single server
+      operationId: serverStatus
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerStatus"
+        '404':
+          description: No server with id
+    put:
+      tags:
+        - Server
+      summary: Update server status
+      description: Update some fields in the server status. Online value is ignored.
+      operationId: updateServerStatus
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        description: Update the server status with
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServerStatus"
+      responses:
+        '200':
+          description: Successfully updated server status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerStatus"
+        '303':
+          description: Successfully updated the status, but the player list is out of date and needs to be updated as well. This can be caused by a server crash, or glados failing to ping the server.
+        '404':
+          description: Failed to find server with id to update
+  /portal:
+    get:
+      tags:
+        - Portal
+      summary: Get list of portal instances
+      description: Get list of all portal instances based
+      parameters:
+        - { in: query, name: page, description: Page number to retrieve, schema: { type: integer } }
+        - { in: query, name: per_page, description: Amount of server to retrieve for that page, schema: { type: integer } }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResult'
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Portal'
+    post:
+      tags:
+        - Portal
+      summary: Register new portal instance
+      description: Register new portal instance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Portal"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portal"
+  /portal/{id}:
+    get:
+      tags:
+        - Portal
+      summary: Get info about a portal
+      description: Get info about a portal
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portal"
+    put:
+      tags:
+        - Portal
+      summary: Update portal instance
+      description: Update portal instance
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Portal"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portal"
+    delete:
+      tags:
+        - Portal
+      summary: Delete portal instance
+      description: Delete portal instance
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portal"
+  /portal/byServer:
+    get:
+      tags:
+        - Portal
+      summary: Get list of portals based on server id
+      description: Get list of portals based on server id
+      operationId: portalsByServerId
+      parameters:
+        - { in: query, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+        - { in: query, name: page, description: Page number to retrieve, schema: { type: integer } }
+        - { in: query, name: per_page, description: Amount of server to retrieve for that page, schema: { type: integer } }
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResult'
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Portal'
+  /portal/config:
+    get:
+      tags:
+        - Portal
+      summary: List all portal configs
+      description: List all the portal configs
+      parameters:
+        - { in: query, name: page, description: Page number to retrieve, schema: { type: integer } }
+        - { in: query, name: per_page, description: Amount of server to retrieve for that page, schema: { type: integer } }
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResult'
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PortalConfig'
+    post:
+      tags:
+        - Portal
+      summary: Create new portal config
+      description: Create new portal config
+      operationId: createPortalConfig
+      requestBody:
+        description: Register a new server
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalConfig"
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalConfig"
+        '405':
+          description: Portal config already exists
+  /portal/config/{id}:
+    get:
+      tags:
+        - Portal
+      summary: Get config by id
+      description: Get config by id
+      operationId: getPortalConfig
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalConfig"
+    put:
+      tags:
+        - Portal
+      summary: Update portal config
+      description: Update portal config
+      operationId: updatePortalConfig
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalConfig"
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalConfig"
+        '405':
+          description: Portal config already exists
+    delete:
+      tags:
+        - Portal
+      summary: Delete a portal config
+      description: Delete a portal config
+      operationId: deletePortalConfig
+      parameters:
+        - { in: path, name: id, description: ID of server, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalConfig"
+        '405':
+          description: Portal config already exists
+  /player:
+    get:
+      tags:
+        - Player
+      summary: Get list of players online
+      description: Get list of players online and which server they are located in.
+      operationId: getPlayerList
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResult'
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Player'
+
+components:
+  schemas:
+    Server:
+      required:
+        - id
+        - ip
+        - port
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "acde070d-8c4c-4f0d-9d8a-162843c10333"
+        ip:
+          type: string
+          format: ipv4
+          example: "127.0.0.1"
+        port:
+          type: integer
+          format: int16
+          example: 3000
+        name:
+          type: string
+          example: "mcserver"
+    ServerStatus:
+      required:
+        - online
+        - num_players
+        - max_players
+        - portals
+      type: object
+      description: Status of a server, online/offline, number of players etc.
+      properties:
+        online:
+          type: boolean
+          description: Reflect the current server status, if its online or offline
+          example: true
+        num_players:
+          type: integer
+          description: Current number of players in the server
+          example: 1
+        max_players:
+          type: integer
+          description: Max number of players that can join the server
+          example: 10
+        portals:
+          type: integer
+          description: Number of portal instances on server
+          example: 69
+    ServerStatusOverview:
+      required:
+        - online
+        - servers
+        - players
+      type: object
+      description: Overview status
+      properties:
+        online: {type: integer, description: Total number of servers online, example: 69}
+        servers: {type: integer, description: Total number of servers, example: 100 }
+        players: {type: integer, description: Total number of players in servers, example: 420 }
+    Player:
+      required:
+        - name
+        - uuid
+      type: object
+      properties:
+        name:
+          type: string
+          description: Minecraft player name
+          example: "Player488"
+        id:
+          type: string
+          description: Minecraft player uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        server: {type: string, description: Server that player is connected too, example: "2235b924-66e7-11ee-8c99-0242ac120002" }
+    PortalConfig:
+      description: Details the creation of a portal. Not a portal instance. Only one 'ignite' property needs to be used to define what can ignite the portal
+      type: object
+      properties:
+        name: {type: string}
+        id: {type: string, format: uuid, example: "eaae0b0e-66e2-11ee-8c99-0242ac120002"}
+        frame_block_id: {description: What block can be used as the portal frame, type: string, example: "minecraft:gold_block"}
+        color: {description: Color tint of the portal, $ref: '#/components/schemas/Color'}
+        ignite_with:
+          description: What to ignite the portal with
+          type: string
+          enum:
+            - item
+            - fire
+            - fluid
+          example: "item"
+        ignite_with_id: {description: If igniting with fluid or item must specify the id, type: string, example: "minecraft:stick"}
+    Color:
+      type: object
+      properties:
+        red: {type: integer, format: int8, example: 252}
+        green: {type: integer, format: int8, example: 186}
+        blue: {type: integer, format: int8, example: 3}
+    Portal:
+      type: object
+      properties:
+        id: {type: string, format: uuid, example: "8470fe4a-66e3-11ee-8c99-0242ac120002" }
+        name: {type: string, example: "village"}
+        host: {type: string, description: Host server id, format: uuid, example: "8d0f9494-66e3-11ee-8c99-0242ac120002"}
+    Rule:
+      type: object
+    Condition:
+      type: object
+    PaginatedResult:
+      type: object
+      properties:
+        total: {type: integer, example: 1}
+        page: {type: integer, example: 0 }
+        per_page: {type: integer, example: 1}
+        has_next: {type: boolean, example: false }
+        has_previous: {type: boolean, example: false }
+        results: {type: array, items: {}}

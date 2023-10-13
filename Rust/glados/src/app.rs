@@ -10,8 +10,9 @@ use reqwasm::http::RequestMode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use stylers::style;
+use log::error;
 
-use crate::structs::server::ServerVec;
+use crate::api::schema::Server;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -22,9 +23,9 @@ pub fn App() -> impl IntoView {
         <html class="h-full" style="height: 100%;">
             // injects a stylesheet into the document <head>
             // id=leptos means cargo-leptos will hot-reload this stylesheet
-            // <Stylesheet id="leptos" href="/pkg/glados.css"/>
-            <Stylesheet id="tailwind" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"/>
-            <Stylesheet id="daisyui" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css"/>
+            <Stylesheet id="leptos" href="/pkg/glados.css"/>
+            // <Stylesheet id="tailwind" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"/>
+            // <Stylesheet id="daisyui" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css"/>
 
             <Script id="htmx" src="https://unpkg.com/htmx.org@1.9.6"/>
 
@@ -71,11 +72,11 @@ pub fn App() -> impl IntoView {
 pub async fn get_servers() -> Result<ServerVec> {
     log::debug!("Get Servers");
     let res = reqwasm::http::Request::get(&format!(
-        "/api/servers",
+        "/api/server",
     ))
     .send()
     .await?
-    .json::<ServerVec>()
+    .json::<Vec<Server>>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
