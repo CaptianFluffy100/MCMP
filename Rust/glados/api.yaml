@@ -122,7 +122,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServerStatusOverview'
+                $ref: '#/components/schemas/ServerOverview'
   /server/status/{id}:
     get:
       tags:
@@ -452,7 +452,7 @@ components:
           type: integer
           description: Number of portal instances on server
           example: 69
-    ServerStatusOverview:
+    ServerOverview:
       required:
         - online
         - servers
@@ -507,6 +507,9 @@ components:
         id: {type: string, format: uuid, example: "8470fe4a-66e3-11ee-8c99-0242ac120002" }
         name: {type: string, example: "village"}
         host: {type: string, description: Host server id, format: uuid, example: "8d0f9494-66e3-11ee-8c99-0242ac120002"}
+        pos_x: {type: integer, example: 0}
+        pos_z: {type: integer, example: 0}
+        pos_y: {type: integer, example: 0}
     Rule:
       type: object
     Condition:

@@ -28,11 +28,13 @@ serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
 reqwasm = "0.5.0"
 stylers = "0.3.2"
-sqlx = { version = "0.7", features = [ "runtime-tokio-rustls", "sqlite" ], optional = true }
+sqlx = { version = "0.7", features = [ "runtime-tokio-rustls", "sqlite", "time" ], optional = true }
+time = { version = "0.3", features = ["macros", "serde-well-known"] }
 anyhow = "1.0.75"
+mc-query = { version = "1.0.1", optional = true }
 
 [package.metadata.cargo-all-features]
-denylist = ["axum", "tower", "tower-http", "tokio", "sqlx", "leptos_axum"]
+denylist = ["axum", "tower", "tower-http", "tokio", "sqlx", "leptos_axum", "mc-query"]
 skip_feature_sets = [["csr", "ssr"], ["csr", "hydrate"], ["ssr", "hydrate"]]
 
 [dependencies.uuid]
@@ -54,6 +56,7 @@ ssr = [
     "dep:tower-http",
     "dep:leptos_axum",
     "dep:sqlx",
+    "dep:mc-query",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
