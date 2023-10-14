@@ -7,6 +7,7 @@ use leptos::*;
 use log::error;
 use glados::api::handlers::db_setup;
 use crate::state::ServerState;
+// use crate::database;
 // use serde::Deserialize;
 
 pub mod database;
@@ -43,6 +44,8 @@ async fn main() {
         error!("Failed to setup database. {}", err);
     }
 
+    database::check_if_file_exists();
+
     // Setting get_configuration(None) means we'll be using cargo-leptos's env values
     // For deployment these variables are:
     // <https://github.com/leptos-rs/start-axum#executing-a-server-on-a-remote-machine-without-the-toolchain>
@@ -64,8 +67,7 @@ async fn main() {
         // .route("/api/servers", post(api::server::post::add_server))
         // .route("/api/servers/:uuid", get(api::server::get::get_server_info))
         // .route("/api/servers/:uuid", post(api::server::post::edit_server))
-        // .route("/api/portals", get(api::portal::get::list_portals))
-        // .route("/api/portals", post(api::server::post::add_server))
+        .route("/api/portals", get(api::portal::get::list_portals).post(api::portal::post::add_portal))
         .leptos_routes(&leptos_options, routes, App)
         .fallback(file_and_error_handler)
         .with_state(leptos_options);

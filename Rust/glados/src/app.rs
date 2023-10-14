@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec, server::{ServerVec}}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::{PortalVec, Portal}, server::{ServerVec}}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage}};
 use http::header::CONTENT_TYPE;
 use leptos::{*, html::Tr};
 use leptos_meta::*;
@@ -157,6 +157,76 @@ pub async fn delete_server(uuid: String) -> Result<Server> {
     .send()
     .await?
     .json::<Server>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn delete_portal(index: String) -> Result<Portal> {
+    // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    // let content = json!({
+    //     "uuid": uuid,
+    //     "name": name,
+    //     "ip": ip,
+    //     "port": port,
+    // });
+    // let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
+    let res = reqwasm::http::Request::delete(&format!(
+        "/api/portals/{}", index,
+    ))
+    // .header("Content-Type", "application/json")
+    // .body(body)
+    .send()
+    .await?
+    .json::<Portal>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn post_portal(index: String, light: String, frame: String, color_r: u8, color_g: u8, color_b: u8) -> Result<Portal> {
+    // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    let content = json!({
+        "index": index,
+        "frameBlockId": frame,
+        "lightWithItemId": light,
+        "color_r": color_r,
+        "color_g": color_g,
+        "color_b": color_b,
+    });
+    let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
+    let res = reqwasm::http::Request::post(&format!(
+        "/api/portals",
+    ))
+    .header("Content-Type", "application/json")
+    .body(body)
+    .send()
+    .await?
+    .json::<Portal>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn put_portal(index: String, light: String, frame: String, color_r: u8, color_g: u8, color_b: u8) -> Result<Portal> {
+    // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    let content = json!({
+        "index": index,
+        "frameBlockId": frame,
+        "lightWithItemId": light,
+        "color_r": color_r,
+        "color_g": color_g,
+        "color_b": color_b,
+    });
+    let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
+    let res = reqwasm::http::Request::put(&format!(
+        "/api/portals/{}", index,
+    ))
+    .header("Content-Type", "application/json")
+    .body(body)
+    .send()
+    .await?
+    .json::<Portal>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())

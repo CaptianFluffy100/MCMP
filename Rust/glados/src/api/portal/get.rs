@@ -1,8 +1,9 @@
-// use axum::{ extract::Path, Form, Json, response::IntoResponse };
-// use serde::*;
-// use leptos::*;
+#[cfg(feature = "ssr")]
+use axum::{ extract::Path, Form, Json, response::IntoResponse };
+use serde::*;
+use leptos::*;
 
-// use crate::{database, structs::portal::Portal};
+use crate::{database, structs::portal::Portal};
 
 // pub async fn get_server_info(Path(uuid): Path<String>) -> impl IntoResponse {
 //     println!("Server UUID: {:?}", uuid);
@@ -14,9 +15,10 @@
 //     return Json(json);
 // }
 //
-// pub async fn list_portals() -> impl IntoResponse {
-//     let portals = database::get_json_portals().await;
-//
-//     let json = serde_json::json!(portals);
-//     return Json(json);
-// }
+#[cfg(feature = "ssr")]
+pub async fn list_portals() -> impl IntoResponse {
+    let portals = database::get_json_portals().await;
+
+    let json = serde_json::json!(portals);
+    return Json(json);
+}

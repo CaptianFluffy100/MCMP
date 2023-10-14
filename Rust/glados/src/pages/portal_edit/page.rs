@@ -1,5 +1,5 @@
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_portals, GladosMainBtn}};
-use leptos::{*, html::{Tr, Dialog}};
+use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::PortalVec}, app::{PopulateSideBar, get_portals, GladosMainBtn, delete_portal, post_portal, put_portal}};
+use leptos::{*, html::{Tr, Dialog, Input}, ev::SubmitEvent};
 use leptos_meta::*;
 use leptos_router::*;
 use leptos::{error::Result, *};
@@ -10,12 +10,67 @@ use crate::structs::server::ServerVec;
 
 #[component]
 pub fn PortalPageEdit() -> impl IntoView {
-    // Creates a reactive value to update the button
-    // let (count, set_count) = create_signal(0);
-    // let on_click = move |_| set_count.update(|count| *count += 1);
-    // let get_server_list = move |_| set_count.update(|count| *count += 1);
-    // let (servers, set_servers) = create_signal();
+    let (read_put_index, write_put_index) = create_signal("".to_string());
+    let (read_put_frame, write_put_frame) = create_signal("".to_string());
+    let (read_put_light, write_put_light) = create_signal("".to_string());
+    let (read_put_color_r, write_put_color_r) = create_signal(0);
+    let (read_put_color_g, write_put_color_g) = create_signal(0);
+    let (read_put_color_b, write_put_color_b) = create_signal(0);
 
+    let input_element_index: NodeRef<Input> = create_node_ref();
+    let input_element_frame: NodeRef<Input> = create_node_ref();
+    let input_element_light: NodeRef<Input> = create_node_ref();
+    let input_element_color_r: NodeRef<Input> = create_node_ref();
+    let input_element_color_g: NodeRef<Input> = create_node_ref();
+    let input_element_color_b: NodeRef<Input> = create_node_ref();
+
+    let on_submit = move |ev: SubmitEvent| {
+        // stop the page from reloading!
+        ev.prevent_default();
+
+        // here, we'll extract the value from the input
+        let value_index = input_element_index()
+            .expect("<input> to exist")
+            .value();
+        let value_frame = input_element_frame()
+            .expect("<input> to exist")
+            .value();
+        let value_light = input_element_light()
+            .expect("<input> to exist")
+            .value();
+        let value_color_r: u8 = input_element_color_r()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        let value_color_g: u8 = input_element_color_g()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        let value_color_b: u8 = input_element_color_b()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        // write_put_index(value);
+        log::debug!("Value: {}", value_index.clone());
+        // log::debug!("Value: {}", value_frame.clone());
+        // log::debug!("Value: {}", value_light.clone());
+        // log::debug!("Value: {}", value_port.clone());
+
+        // let _index = value_index.clone();
+        // let _light = value_light.clone();
+        // let _port = value_port.clone();
+        // let _frame = value_frame.clone();
+        
+        let stable = create_local_resource( move || (value_index.clone(),value_light.clone(),value_frame.clone(),value_color_r.clone(),value_color_g.clone(),value_color_b.clone()), 
+        move |(_index, _light, _frame, _color_r, _color_g, _color_b)| async move { post_portal(_index, _light, _frame, _color_r, _color_g, _color_b).await });
+
+        
+    };
+
+    let open = "add.showModal()";
     view! {
         <div class="navbar bg-base-100 h-full" style="height: 100%;">
             <div class="drawer h-full" style="height: 100%;">
@@ -23,7 +78,43 @@ pub fn PortalPageEdit() -> impl IntoView {
               <div class="drawer-content" style="height: 100%;">
                 // <div inner-html={page_data}/>
                 {GladosMainBtn}
-                <a class="btn btn-outline float-right btn-success">ADD</a>
+                <a class="btn btn-outline float-right btn-success" onclick={open}>ADD</a>
+                <dialog id="add" class="modal">
+                    <form on:submit=on_submit>
+                        <div class="modal-box">
+                            <h3 class="font-bold text-lg">Add New Server</h3>
+                            <div class="py-4 grid grid-rows-3 grid-flow-col gap-4">
+                            <div>
+                                <a>INDEX: </a>
+                                <input type="text" placeholder="INDEX" class="input input-bordered w-full max-w-xs" value=read_put_index node_ref=input_element_index/>
+                            </div>
+                            <div>
+                                <a>FRAME BLOCK: </a>
+                                <input type="text" placeholder="FRAME" class="input input-bordered w-full max-w-xs" value=read_put_frame node_ref=input_element_frame />
+                            </div>
+                            <div>
+                                <a>LIGHT WITH ITEM: </a>
+                                <input type="text" placeholder="LIGHT" class="input input-bordered w-full max-w-xs" value=read_put_light node_ref=input_element_light />
+                            </div>
+                            <div>
+                                <a>COLOR RED: </a>
+                                <input type="text" placeholder="COLOR RED" class="input input-bordered w-full max-w-xs" value=read_put_color_r node_ref=input_element_color_r />
+                            </div>
+                            <div>
+                                <a>COLOR GREEN: </a>
+                                <input type="text" placeholder="COLOR GREEN" class="input input-bordered w-full max-w-xs" value=read_put_color_g node_ref=input_element_color_g />
+                            </div>
+                            <div>
+                                <a>COLOR BLUE: </a>
+                                <input type="text" placeholder="COLOR BLUE" class="input input-bordered w-full max-w-xs" value=read_put_color_b node_ref=input_element_color_b />
+                            </div>
+                        </div>
+                        <div class="grid grid-rows-1 gap-4">
+                            <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
+                        </div>
+                        </div>
+                    </form>
+                </dialog>
                 {PortalPageEditDyn}
               </div> 
               {PopulateSideBar}
@@ -68,19 +159,25 @@ pub fn portal_page_edit_dyn() -> impl IntoView {
                                 {    
                                     let mut html: Vec<HtmlElement<Tr>> = vec![];
                                     let mut edit: Vec<HtmlElement<Dialog>> = vec![];
+                                    let mut remove: Vec<HtmlElement<Dialog>> = vec![];
+
                                     match a {
                                         Ok(data) => {
                                             for portals in data.clone().portals {
-                                                let open = portals.index.clone()+".showModal()";
-                                                html.push(view! {<tr><th>{portals.index.clone()}</th><td>{portals.frameBlockId.clone()}</td><td>{portals.lightWithItemId.clone()}</td><td>{portals.color_b}</td><td>{portals.color_g}</td><td>{portals.color_r}</td><td><a class="btn btn-outline btn-warning" onclick={open}>EDIT</a></td><td><a class="btn btn-outline btn-error">REMOVE</a></td></tr>});
-                                                edit.push(view! {<dialog id={portals.index.clone()} class="modal"><div class="modal-box"><h3 class="font-bold text-lg">Edit {portals.index.clone()}</h3><div class="py-4 grid grid-rows-3 grid-flow-col gap-4"><div><a>INDEX: </a><input type="text" placeholder="INDEX" class="input input-bordered w-full max-w-xs" value={portals.index.clone()} disabled /></div><div><a>Frame Block: </a><input type="text" placeholder="FRAME BLOCK" class="input input-bordered w-full max-w-xs" value={portals.frameBlockId.clone()} /></div><div><a>Light With Item: </a><input type="text" placeholder="Light With Item" class="input input-bordered w-full max-w-xs" value={portals.lightWithItemId.clone()} /></div><div><a>Color B: </a><input type="text" placeholder="Color B" class="input input-bordered w-full max-w-xs" value={portals.color_b.clone()} /></div><div><a>Color G: </a><input type="text" placeholder="Color G" class="input input-bordered w-full max-w-xs" value={portals.color_g.clone()} /></div><div><a>Color R: </a><input type="text" placeholder="Color R" class="input input-bordered w-full max-w-xs" value={portals.color_r.clone()} /></div></div><button class="btn btn-outline btn-success">SAVE</button></div><form method="dialog" class="modal-backdrop"><button>close</button></form></dialog>});
+                                                let open_edit = "edit".to_string()+&portals.index.clone()+".showModal()";
+                                                let open_remove = "remove".to_string()+&portals.index.clone()+".showModal()";
+                                                html.push(view! {<tr><th>{portals.index.clone()}</th><td>{portals.frameBlockId.clone()}</td><td>{portals.lightWithItemId.clone()}</td><td>{portals.color_b}</td><td>{portals.color_g}</td><td>{portals.color_r}</td><td><a class="btn btn-outline btn-warning" onclick={open_edit}>EDIT</a></td><td><a class="btn btn-outline btn-error" onclick={open_remove}>REMOVE</a></td></tr>});
+                                                let edit_props = PortalPageEditFormsDynProps{index: portals.index.clone(), frame: portals.frameBlockId.clone(), light: portals.lightWithItemId.clone(), color_r: portals.color_r.clone(), color_g: portals.color_g.clone(), color_b: portals.color_b.clone()};
+                                                edit.push(view! {<dialog id={"edit".to_string()+&portals.index.clone()} class="modal">{edit_props}</dialog>});
+                                                let remove_props = PortalPageRemoveFormsDynProps{index: portals.index.clone()};
+                                                remove.push(view! {<dialog id={"remove".to_string()+&portals.index.clone()} class="modal">{PortalPageRemoveFormsDyn(remove_props)}</dialog>});
                                             }
-                                            (html, edit)
+                                            (html, edit, remove)
                                         },
                                         Err(e) => {
                                             html.push(view! {<tr>{format!("{:?}", e)}</tr>});
                                             // TODO
-                                            (html, edit)
+                                            (html, edit, remove)
                                         }
                                     }
                                 }
@@ -91,4 +188,181 @@ pub fn portal_page_edit_dyn() -> impl IntoView {
             }}
         </Suspense>
     }
+}
+
+#[component]
+pub fn portal_page_remove_forms_dyn(index: String) -> impl IntoView {
+    let (read_put_index, write_put_index) = create_signal("".to_string());
+
+    let input_element_index: NodeRef<Input> = create_node_ref();
+
+    let index_org = index.clone();
+
+    let on_submit = move |ev: SubmitEvent| {
+        // stop the page from reloading!
+        ev.prevent_default();
+
+        // here, we'll extract the value from the input
+        let value_index = input_element_index()
+            .expect("<input> to exist")
+            .value();
+        // write_put_index(value);
+        // log::debug!("Value: {}", value_index.clone());
+
+        let _index = value_index.clone();
+        
+        if _index == index_org {
+            log::debug!("Deleting Server: {}", _index);
+            let stable = create_local_resource( move || value_index.clone(), 
+            move |_index| async move { delete_portal(_index.clone()).await });
+
+            match stable.get() {
+                Some(data) => {
+                    // view! {
+                    //     <div class="toast">
+                    //       <div class="alert alert-success">
+                    //         <span>New message arrived.</span>
+                    //       </div>
+                    //     </div>
+                    // };
+                    log::debug!("Data: {:?}", data);
+                },
+                None => {
+                    // view! {
+                    //     <div class="toast">
+                    //       <div class="alert alert-error">
+                    //         <span>New message arrived.</span>
+                    //       </div>
+                    //     </div>
+                    // };
+                    log::debug!("NULL");
+                }
+            }
+        }
+    };
+
+    
+
+    view! {
+        <form on:submit=on_submit>
+            <div class="modal-box w-full">
+                <h3 class="font-bold text-sm">Delete Portal Definition {index.clone()}.  Type in the Index to procced.</h3>
+                <div class="py-4 grid grid-rows-1 grid-flow-col gap-4">
+                    <div>
+                        <input type="text" placeholder="INDEX" class="input input-bordered w-full max-w-xs" value=read_put_index node_ref=input_element_index/>
+                    </div>
+                </div>
+                <div class="btn btn-outline btn-warning w-full">
+                    This process can NOT be reversed.
+                </div>
+                <div class="grid grid-rows-1 gap-8">
+                    <input class="btn btn-outline btn-error" type="submit" value="DELETE"/>
+                </div>
+            </div>
+        </form>
+    }
+
+}
+
+#[component]
+pub fn portal_page_edit_forms_dyn(index: String, frame: String, light: String, color_r: u8, color_g: u8, color_b: u8) -> impl IntoView {
+    let (read_put_index, write_put_index) = create_signal(index.clone());
+    let (read_put_frame, write_put_frame) = create_signal(frame.clone());
+    let (read_put_light, write_put_light) = create_signal(light.clone());
+    let (read_put_color_r, write_put_color_r) = create_signal(color_r);
+    let (read_put_color_g, write_put_color_g) = create_signal(color_g);
+    let (read_put_color_b, write_put_color_b) = create_signal(color_b);
+
+    let input_element_index: NodeRef<Input> = create_node_ref();
+    let input_element_frame: NodeRef<Input> = create_node_ref();
+    let input_element_light: NodeRef<Input> = create_node_ref();
+    let input_element_color_r: NodeRef<Input> = create_node_ref();
+    let input_element_color_g: NodeRef<Input> = create_node_ref();
+    let input_element_color_b: NodeRef<Input> = create_node_ref();
+
+    let on_submit = move |ev: SubmitEvent| {
+        // stop the page from reloading!
+        ev.prevent_default();
+
+        // here, we'll extract the value from the input
+        let value_index = input_element_index()
+            .expect("<input> to exist")
+            .value();
+        let value_frame = input_element_frame()
+            .expect("<input> to exist")
+            .value();
+        let value_light = input_element_light()
+            .expect("<input> to exist")
+            .value();
+        let value_color_r: u8 = input_element_color_r()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        let value_color_g: u8 = input_element_color_g()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        let value_color_b: u8 = input_element_color_b()
+            .expect("<input> to exist")
+            .value()
+            .parse()
+            .unwrap();
+        // write_put_index(value);
+        log::debug!("Value: {}", value_index.clone());
+        // log::debug!("Value: {}", value_frame.clone());
+        // log::debug!("Value: {}", value_light.clone());
+        // log::debug!("Value: {}", value_port.clone());
+
+        // let _index = value_index.clone();
+        // let _light = value_light.clone();
+        // let _port = value_port.clone();
+        // let _frame = value_frame.clone();
+        
+        let stable = create_local_resource( move || (value_index.clone(),value_light.clone(),value_frame.clone(),value_color_r.clone(),value_color_g.clone(),value_color_b.clone()), 
+        move |(_index, _light, _frame, _color_r, _color_g, _color_b)| async move { put_portal(_index, _light, _frame, _color_r, _color_g, _color_b).await });
+
+        
+    };
+
+    
+
+    view! {
+        <form on:submit=on_submit>
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Edit {index.clone()}</h3>
+                <div class="py-4 grid grid-rows-3 grid-flow-col gap-4">
+                    <div>
+                        <a>INDEX: </a>
+                        <input type="text" placeholder="INDEX" class="input input-bordered w-full max-w-xs" value=read_put_index node_ref=input_element_index disabled/>
+                    </div>
+                    <div>
+                        <a>FRAME BLOCK: </a>
+                        <input type="text" placeholder="FRAME" class="input input-bordered w-full max-w-xs" value=read_put_frame node_ref=input_element_frame />
+                    </div>
+                    <div>
+                        <a>LIGHT WITH ITEM: </a>
+                        <input type="text" placeholder="LIGHT" class="input input-bordered w-full max-w-xs" value=read_put_light node_ref=input_element_light />
+                    </div>
+                    <div>
+                        <a>COLOR RED: </a>
+                        <input type="text" placeholder="COLOR RED" class="input input-bordered w-full max-w-xs" value=read_put_color_r node_ref=input_element_color_r />
+                    </div>
+                    <div>
+                        <a>COLOR GREEN: </a>
+                        <input type="text" placeholder="COLOR GREEN" class="input input-bordered w-full max-w-xs" value=read_put_color_g node_ref=input_element_color_g />
+                    </div>
+                    <div>
+                        <a>COLOR BLUE: </a>
+                        <input type="text" placeholder="COLOR BLUE" class="input input-bordered w-full max-w-xs" value=read_put_color_b node_ref=input_element_color_b />
+                    </div>
+                </div>
+                <div class="grid grid-rows-1 gap-4">
+                    <input class="btn btn-outline btn-success" type="submit" on:submit=on_submit value="SAVE"/>
+                </div>
+            </div>
+        </form>
+    }
+
 }
