@@ -5,7 +5,7 @@ use serde::*;
 #[cfg(feature = "ssr")]
 use leptos::*;
 use log::error;
-use glados::api::handlers::db_setup;
+use glados::api::handlers;
 use crate::state::ServerState;
 // use serde::Deserialize;
 
@@ -39,7 +39,7 @@ async fn main() {
 
     simple_logger::init_with_level(log::Level::Debug).expect("couldn't initialize logging");
 
-    let db = db_setup().await;
+    let db = handlers::db_setup().await;
     if let Err(err) = db {
         error!("Failed to setup database. {}", err);
     }
@@ -62,11 +62,12 @@ async fn main() {
         // .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
         .route("/api/server", get(api::handlers::get_list_servers).post(api::handlers::post_json_register_server))
         .route("/api/server/:id", get(api::handlers::get_server_by_id).put(api::handlers::put_json_update_server).delete(api::handlers::delete_unregister_server))
-        // .route("/api/servers", post(api::server::post::add_server))
-        // .route("/api/servers/:uuid", get(api::server::get::get_server_info))
-        // .route("/api/servers/:uuid", post(api::server::post::edit_server))
-        // .route("/api/portals", get(api::portal::get::list_portals))
-        // .route("/api/portals", post(api::server::post::add_server))
+        .route("/api/server/status/:id", get(api::handlers::get_get_server_status))
+        .route("/api/portal/config", get(api::handlers::get_list_portal_configs).post(api::handlers::post_create_portal_config))
+        .route("/api/portal/config/:id", get(api::handlers::get_portal_config).put(api::handlers::put_update_portal_config).delete(api::handlers::delete_portal_config))
+        .route("/api/portal", get(api::handlers::get_list_portals).post(api::handlers::post_create_portal))
+        .route("/api/portal/:id", get(api::handlers::get_portal).put(api::handlers::put_update_portal).delete(api::handlers::delete_portal))
+        // .route("/api/portal", get(api::))
         .leptos_routes(&leptos_options, routes, App)
         .fallback(file_and_error_handler)
         .with_state(leptos_options);
