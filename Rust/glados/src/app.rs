@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{error_template::{AppError, ErrorTemplate}, structs::{cob::GLaDOSError, portal::{PortalVec, Portal}, server::{ServerVec}}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage}};
+use crate::{error_template::{AppError, ErrorTemplate}, pages::{server_list::page::ServerPage, portal_list::page::PortalPage, server_edit::page::ServerPageEdit, portal_edit::page::PortalPageEdit, home::page::HomePage, portal_instance_list::page::PortalInstancePage}, api::schema::{PortalConfig, IgniteWith, Portal}};
 use http::header::CONTENT_TYPE;
 use leptos::{*, html::Tr};
 use leptos_meta::*;
@@ -49,6 +49,7 @@ pub fn App() -> impl IntoView {
                             <Route path="/portals" view=PortalPage/>
                             <Route path="/server/list" view=ServerPageEdit/>
                             <Route path="/portal/list" view=PortalPageEdit/>
+                            <Route path="/portal/instances" view=PortalInstancePage/>
                         </Routes>
                     </main>
                 </Router>
@@ -162,7 +163,7 @@ pub async fn delete_server(uuid: String) -> Result<Server> {
     // Err(GLaDOSError::ERROR.into())
 }
 
-pub async fn delete_portal(index: String) -> Result<Portal> {
+pub async fn delete_portal_config(index: String) -> Result<PortalConfig> {
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
     // let content = json!({
     //     "uuid": uuid,
@@ -172,75 +173,103 @@ pub async fn delete_portal(index: String) -> Result<Portal> {
     // });
     // let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::delete(&format!(
-        "/api/portals/{}", index,
+        "/api/portal/config/{}", index,
     ))
     // .header("Content-Type", "application/json")
     // .body(body)
     .send()
     .await?
-    .json::<Portal>()
+    .json::<PortalConfig>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
 }
 
-pub async fn post_portal(index: String, light: String, frame: String, color_r: u8, color_g: u8, color_b: u8) -> Result<Portal> {
+pub async fn post_portal_config(id: String, name: String, light: String, light_id: String, frame: String, color_r: u8, color_g: u8, color_b: u8) -> Result<PortalConfig> {
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
     let content = json!({
-        "index": index,
-        "frameBlockId": frame,
-        "lightWithItemId": light,
-        "color_r": color_r,
-        "color_g": color_g,
-        "color_b": color_b,
+        "id": id,
+        "name": name,
+        "frame_block_id": frame,
+        "ignite_with": light,
+        "ignite_with_id": light_id,
+        "color": {
+            "red": color_r,
+            "green": color_g,
+            "blue": color_b
+        }
+        
     });
     let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::post(&format!(
-        "/api/portals",
+        "/api/portal/config",
     ))
     .header("Content-Type", "application/json")
     .body(body)
     .send()
     .await?
-    .json::<Portal>()
+    .json::<PortalConfig>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
 }
 
-pub async fn put_portal(index: String, light: String, frame: String, color_r: u8, color_g: u8, color_b: u8) -> Result<Portal> {
+pub async fn put_portal_config(id: String, name: String, mut light: String, light_id: String, frame: String, color_r: u8, color_g: u8, color_b: u8) -> Result<PortalConfig> {
     // let content = "{\"uuid\":"+uuid.to_owned()+",\"name\":"+name+",\"ip\":"+ip+",\"port\":"+port+"}";
+    let light_with;
+    let _light_out = light.make_ascii_lowercase();
+    if light == "fluid".to_string() {
+        light_with = IgniteWith::Fluid(light_id);
+    } else if light == "item".to_string() {
+        light_with = IgniteWith::Item(light_id);
+    } else {
+        light_with = IgniteWith::Fire;
+    }
     let content = json!({
-        "index": index,
-        "frameBlockId": frame,
-        "lightWithItemId": light,
-        "color_r": color_r,
-        "color_g": color_g,
-        "color_b": color_b,
+        "id": id,
+        "name": name,
+        "frame_block_id": frame,
+        "ignite_with": light_with,
+        "color": {
+            "red": color_r,
+            "green": color_g,
+            "blue": color_b
+        }
+        
     });
     let body = serde_json::to_string(&content).expect("Failed to serialize JSON");
     let res = reqwasm::http::Request::put(&format!(
-        "/api/portals/{}", index,
+        "/api/portal/config/{}", id,
     ))
     .header("Content-Type", "application/json")
     .body(body)
     .send()
     .await?
-    .json::<Portal>()
+    .json::<PortalConfig>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
 }
 
-// TODO Delete server based on UUID
-
-pub async fn get_portals() -> Result<PortalVec> {
+pub async fn get_portal_configs() -> Result<Vec<PortalConfig>> {
     let res = reqwasm::http::Request::get(&format!(
-        "/api/portals",
+        "/api/portal/config",
     ))
     .send()
     .await?
-    .json::<PortalVec>()
+    .json::<Vec<PortalConfig>>()
+    .await?;
+    Ok(res)
+    // Err(GLaDOSError::ERROR.into())
+}
+
+pub async fn get_portal_instances() -> Result<Vec<Portal>> {
+    let res = reqwasm::http::Request::get(&format!(
+        "/api/portal",
+    ))
+    .send()
+    .await?
+    .json::<Vec<Portal>>()
     .await?;
     Ok(res)
     // Err(GLaDOSError::ERROR.into())
@@ -261,6 +290,7 @@ pub fn PopulateSideBar() -> impl IntoView {
                     <ul>
                         <li><a href="/servers">Server List</a></li>
                         <li><a href="/portals">Portal List</a></li>
+                        <li><a href="/portal/instances">Portal Instances List</a></li>
                     </ul>
                 </details>
             </li>

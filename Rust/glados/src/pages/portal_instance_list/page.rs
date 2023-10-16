@@ -1,4 +1,4 @@
-use crate::{error_template::{AppError, ErrorTemplate}, app::{PopulateSideBar, GladosMainBtn, get_portal_configs}, api::schema::PortalConfig};
+use crate::{error_template::{AppError, ErrorTemplate}, app::{PopulateSideBar, GladosMainBtn, get_portal_instances}, api::schema::Portal};
 use leptos::{*, html::Tr};
 use leptos_meta::*;
 use leptos_router::*;
@@ -6,10 +6,8 @@ use leptos::{error::Result, *};
 use serde::{Deserialize, Serialize};
 use stylers::style;
 
-use crate::structs::server::ServerVec;
-
 #[component]
-pub fn PortalPage() -> impl IntoView {
+pub fn PortalInstancePage() -> impl IntoView {
     // Creates a reactive value to update the button
     // let (count, set_count) = create_signal(0);
     // let on_click = move |_| set_count.update(|count| *count += 1);
@@ -33,13 +31,13 @@ pub fn PortalPage() -> impl IntoView {
 
 #[component]
 pub fn portal_page_dyn() -> impl IntoView {
-    let async_data: Resource<(), std::result::Result<Vec<PortalConfig>, error::Error>> = create_local_resource(
+    let async_data: Resource<(), std::result::Result<Vec<Portal>, error::Error>> = create_local_resource(
         // the first is the "source signal"
         || (),
         // the second is the loader
         // it takes the source signal's value as its argument
         // and does some async work
-        |_| async move { get_portal_configs().await },
+        |_| async move { get_portal_instances().await },
     );
 
     view! {
@@ -55,12 +53,10 @@ pub fn portal_page_dyn() -> impl IntoView {
                                   <tr>
                                     <th>Name</th>
                                     <th>ID</th>
-                                    <th>Frame Block</th>
-                                    <th>Ligth With</th>
-                                    <th>Ligth With ID</th>
-                                    <th>Color B</th>
-                                    <th>Color G</th>
-                                    <th>Color R</th>
+                                    <th>Host</th>
+                                    <th>Pos X</th>
+                                    <th>Pos Y</th>
+                                    <th>Pos Z</th>
                                   </tr>
                                 </thead>
                                 <tbody> 
@@ -69,8 +65,18 @@ pub fn portal_page_dyn() -> impl IntoView {
                                     match a {
                                         Ok(data) => {
                                             for portals in data.clone() {
-                                                let (ignite_with, ignite_with_id) = portals.ignite_with.deconstruct();
-                                                html.push(view! {<tr><th>{portals.name}</th><td>{portals.id.to_string()}</td><td>{portals.frame_block_id}</td><td>{ignite_with}</td><td>{ignite_with_id}</td><td>{portals.color.blue}</td><td>{portals.color.green}</td><td>{portals.color.red}</td></tr>});
+                                                html.push(
+                                                    view! {
+                                                        <tr>
+                                                            <th>{portals.name}</th>
+                                                            <td>{portals.id.to_string()}</td>
+                                                            <td>{portals.host.to_string()}</td>
+                                                            <td>{portals.pos_x}</td>
+                                                            <td>{portals.pos_y}</td>
+                                                            <td>{portals.pos_z}</td>
+                                                        </tr>
+                                                    }
+                                                );
                                             }
                                             html
                                         },
